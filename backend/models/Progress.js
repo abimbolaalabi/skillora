@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const progressSchema = new mongoose.Schema({}, { timestamps: true });
 
-module.exports = mongoose.model('Progress', progressSchema);
+export default mongoose.model('Progress', progressSchema);

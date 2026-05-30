@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Skillora – Learning & Development Platform API",
   "main": "backend/server.js",
+  "type": "module",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js"
