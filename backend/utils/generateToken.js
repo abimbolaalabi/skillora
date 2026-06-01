@@ -1,4 +1,3 @@
-//TODO: will still be modified
 import jwt from 'jsonwebtoken';
 
 const generateToken = (user) => {
