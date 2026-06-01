@@ -15,13 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth',        require('./routes/authRoutes'));
-app.use('/api/users',       require('./routes/userRoutes'));
-app.use('/api/modules',     require('./routes/moduleRoutes'));
-app.use('/api/assignments', require('./routes/assignmentRoutes'));
-app.use('/api/progress',    require('./routes/progressRoutes'));
-app.use('/api/analytics',   require('./routes/analyticsRoutes'));
-
+app.use('/api/auth',        require('./routes/authRoutes.js'));
+app.use('/api/users',       require('./routes/userRoutes.js'));
+app.use('/api/modules',     require('./routes/moduleRoutes.js'));
+app.use('/api/assignments', require('./routes/assignmentRoutes.js'));
+app.use('/api/progress',    require('./routes/progressRoutes.js'));
+app.use('/api/analytics',   require('./routes/analyticsRoutes.js'));gi
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
