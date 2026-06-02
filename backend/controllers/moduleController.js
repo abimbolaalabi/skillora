@@ -102,7 +102,7 @@ exports.updateModule = async (req, res) => {
 // delete Module
 exports.deleteModule = async (req, res) => {
     try {
-        const id = req.params
+        const {id} = req.params
         const deletedModule = await Module.findByIdAndDelete(id);
         return res
         .status(200)
