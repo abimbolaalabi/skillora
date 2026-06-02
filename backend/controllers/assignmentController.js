@@ -8,7 +8,7 @@ const Notification = require("../models/Notification.js")
 exports.createAssignment = async (req, res) => {
     try {
         const {moduleId, assignedTo, dueDate, department} = req.body
-        if (!assignedTo && department) {
+        if (!assignedTo && !department) {
             return res.status(401).json({message: "Assign to a user or department"})
         }
 
