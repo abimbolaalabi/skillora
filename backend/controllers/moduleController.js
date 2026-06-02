@@ -118,7 +118,7 @@ exports.deleteModule = async (req, res) => {
 exports.publishModule = async (req, res) => {
     try {
         const {id} = req.params
-        const module = Module.findByIdAndUpdate(id, {
+        const module = await Module.findByIdAndUpdate(id, {
             status: "published",
             new: true
         })
