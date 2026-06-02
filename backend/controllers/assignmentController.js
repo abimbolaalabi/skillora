@@ -29,7 +29,7 @@ exports.createAssignment = async (req, res) => {
             assignments.push(assignment);
         }
         if (department) {
-            const users = User.find({department, role: "employee", isActive: true})
+            const users = await User.find({department, role: "employee", isActive: true})
             for (const user of users) {
                 const assignment = await Assignment.create({
                     moduleId,
