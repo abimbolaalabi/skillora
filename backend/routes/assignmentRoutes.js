@@ -1,4 +1,4 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 const {createAssignment, getAssignments, getMyAssignedModules} = require("../controllers/assignmentController.js");
 
@@ -7,4 +7,4 @@ router.get("/getAssignments", getAssignments);
 router.get("/getMyAssignedModules/:id", getMyAssignedModules);
 router.post("/createAssignment", createAssignment);
 
-module.exports = router;
+export default router;

@@ -1,6 +1,14 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 
-// TODO: wire up auth controller methods
+import authController from "../controllers/authController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
-module.exports = router;
+
+
+router.post("/register", authMiddleware, roleMiddleware("admin"), authController.register);
+router.post("/login", authController.login);
+
+
+export default router;

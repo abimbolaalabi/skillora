@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "Skillora – Learning & Development Platform API",
   "main": "backend/server.js",
+  "type": "module",
   "scripts": {
     "start": "node backend/server.js",
+    "seed:admin": "node backend/script/adminProfile.js",
     "dev": "nodemon backend/server.js"
   },
   "author": "Sasi",

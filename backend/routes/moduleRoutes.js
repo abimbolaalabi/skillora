@@ -1,4 +1,4 @@
-const express = require('express');
+import express from "express";
 const router = express.Router();
 const upload = require("../middleware/uploadMiddleware.js");
 const {createModule, getAllModule, getModuleById, updateModule, deleteModule, publishModule} = require("../controllers/moduleController.js");
@@ -11,4 +11,4 @@ router.patch("/publishModule/:id", publishModule);
 router.post("/createModule", upload.single("video"), createModule);
 router.delete("/deleteModule/:id", deleteModule);
 
-module.exports = router;
+export default router;
