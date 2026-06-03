@@ -1,4 +1,3 @@
-// TODO: register, login, getMe
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import hashPassword from "../utils/hashPassword.js";
@@ -6,6 +5,7 @@ import comparePassword from "../utils/comparePassword.js";
 
 const register = async (req, res) => {
     try {
+
         const { name, email, password, role, department } = req.body;
         const existingMail = await User.findOne({email});
         
@@ -15,17 +15,17 @@ const register = async (req, res) => {
             });
         };
     
-        const hashPassword = await hashPassword(password);
-        const createUser = await User.create({
+        const saltedPassword = await hashPassword(password);
+        const user = await User.create({
             name,
             email,
-            password: hashedPassword,
+            password: saltedPassword,
             role,
             department
         });
         res.status(201).json({
             message: "User created successfully",
-            user: createUser
+            user
         }); 
     }
     catch (error) {
@@ -38,16 +38,17 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const mail = await User.findOne({email});
+        const user = await User.findOne({email});
 
-        if(!mail){
+        if(!user){
             return res.status(400).json({
                 error: "Incorrect email"
             });
         }
 
+//
         // Compare passwords (assuming you have a method to do this)
-        const isMatch = await comparePassword(password, mail.password);
+        const isMatch = await comparePassword(password, user.password);
         if(!isMatch){
             return res.status(400).json({
                 error: "Incorrect email or password"
@@ -55,12 +56,12 @@ const login = async (req, res) => {
         }
 
         // Generate JWT token
-        const token = await generateToken(mail._id);
+        const token = await generateToken(user);
 
         res.status(200).json({
             message: "Login successful",
             token,
-            mail
+            user
         });
     } catch (error) {
         return res.status(500).json({

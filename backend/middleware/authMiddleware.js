@@ -11,10 +11,10 @@ const authMiddleware = (req, res, next) => {
     }
 
     const part = authHeader.split(" ");
-    const JWT_SECRET = part[1];
+    const token = part[1];
 
     const decoded = jwt.verify(
-      JWT_SECRET,
+      token,
       process.env.JWT_SECRET
     );
 
@@ -27,5 +27,8 @@ const authMiddleware = (req, res, next) => {
     });
   }
 };
+
+
+
 
 export default authMiddleware;
