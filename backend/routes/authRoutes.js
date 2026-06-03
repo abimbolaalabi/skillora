@@ -8,7 +8,7 @@ import roleMiddleware from "../middleware/roleMiddleware.js";
 
 
 router.post("/register", authMiddleware, roleMiddleware("admin"), authController.register);
-router.post("/login", authMiddleware, authController.login);
+router.post("/login", authController.login);
 
 
 export default router;

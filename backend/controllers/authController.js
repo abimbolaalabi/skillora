@@ -1,6 +1,8 @@
 // TODO: register, login, getMe
 import User from "../models/User.js";
+import generateToken from "../utils/generateToken.js";
 import hashPassword from "../utils/hashPassword.js";
+import comparePassword from "../utils/comparePassword.js";
 
 const register = async (req, res) => {
     try {
@@ -27,8 +29,8 @@ const register = async (req, res) => {
         }); 
     }
     catch (error) {
-        res.status(500).json({
-            error: "Server error"
+        return res.status(500).json({
+    error: error.message
         });
     }
 };
@@ -45,7 +47,7 @@ const login = async (req, res) => {
         }
 
         // Compare passwords (assuming you have a method to do this)
-        const isMatch = await mail.comparePassword(password);
+        const isMatch = await comparePassword(password, mail.password);
         if(!isMatch){
             return res.status(400).json({
                 error: "Incorrect email or password"
@@ -53,7 +55,7 @@ const login = async (req, res) => {
         }
 
         // Generate JWT token
-        const token = await mail.generateAuthToken();
+        const token = await generateToken(mail._id);
 
         res.status(200).json({
             message: "Login successful",
@@ -61,8 +63,8 @@ const login = async (req, res) => {
             mail
         });
     } catch (error) {
-        res.status(500).json({
-            error: "Server error"
+        return res.status(500).json({
+    error: error.message
         });
     }
 };
