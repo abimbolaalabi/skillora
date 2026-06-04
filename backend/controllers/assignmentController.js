@@ -1,15 +1,34 @@
-const Assignment = require("../models/Assignment.js");
-const User = require("../models/User.js");
-const Notification = require("../models/Notification.js")
+import Assignment from "../models/Assignment.js";
+import User from "../models/User.js";
+import Notification from "../models/Notification.js";
+import Module from "../models/Module.js"
 
 
 // TODO: createAssignment, getAssignments, getMyAssignments
 // New Assignment
-exports.createAssignment = async (req, res) => {
+export const createAssignment = async (req, res) => {
     try {
         const {moduleId, assignedTo, dueDate, department} = req.body
         if (!assignedTo && !department) {
             return res.status(401).json({message: "Assign to a user or department"})
+        }
+
+        const module = await Module.findById(moduleId);
+        const alreadyAssigned = await Assignment.findOne({moduleId, assignedTo})
+
+        if (alreadyAssigned) {
+            return res
+            .status(400).json({message: "Module already assigned to user"});
+        }
+
+        if (!module) {
+            return res
+            .status(404).json({message: "module not found"});
+        }
+
+        if (module.status == "draft") {
+            return res
+            .status("400").json({message: "Module not yet published"});
         }
 
         const assignments = []
@@ -18,7 +37,7 @@ exports.createAssignment = async (req, res) => {
             const assignment = await Assignment.create({
                 moduleId,
                 assignedTo,
-                assignedBy: req.body._id,
+                assignedBy: req.user._id,
                 dueDate
             })
 
@@ -53,11 +72,11 @@ exports.createAssignment = async (req, res) => {
 }
 
 // Get Assignments
-exports.getAssignments = async (req, res) => {
+export const getAssignments = async (req, res) => {
     try {
         const assignments = await Assignment.find()
-        .populate("moduleId", "title, status")
-        .populate("assignedTo", "name, email")
+        .populate("moduleId", "title status")
+        .populate("assignedTo", "name email")
         .populate("department", "name")
         .populate("assignedBy", "name email")
 
@@ -72,16 +91,17 @@ exports.getAssignments = async (req, res) => {
 }
 
 // get user assignment
-exports.getMyAssignedModules = async (req, res) => {
+export const getMyAssignedModules = async (req, res) => {
     try {
-        const assignedModules = await Assignment.find(req.user.id)
+        const assignedModules = await Assignment.find({assignedTo: req.user._id})
             .populate("moduleId", "title status")
             .populate("assignedTo", "name email")
             .populate("department", "name")
             .populate("assignedBy", "name email")
 
-            if (!assignedModules) {
-                res.status(401)
+            if (assignedModules.length === 0) {
+                return res
+                .status(401)
                 .json({message:"no module assigned to you yet"})
             }
 
