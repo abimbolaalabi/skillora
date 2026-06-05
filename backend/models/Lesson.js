@@ -21,11 +21,13 @@ const lessonSchema = new mongoose.Schema({
         type: String
     },
     duration: {
-        type: Number
+        type: Number,
+        default: 0
     },
     order: {
         type: Number,
-        required: true
+        required: true,
+        default: 0
     },
     resources: [{
         title: String,
