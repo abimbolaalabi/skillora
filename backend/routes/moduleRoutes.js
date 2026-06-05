@@ -1,14 +1,22 @@
 import express from "express";
-const router = express.Router();
-const upload = require("../middleware/uploadMiddleware.js");
-const {createModule, getAllModule, getModuleById, updateModule, deleteModule, publishModule} = require("../controllers/moduleController.js");
+import roleMiddleware from "../middleware/roleMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import {
+  createAssignment,
+  getAssignments,
+  getMyAssignedModules,
+} from "../controllers/assignmentController.js";
 
-// TODO: wire up module controller methods
-router.get("/getAllModule", getAllModule);
-router.get("/getModuleById/:id", getModuleById);
-router.patch("/updateModule/:id", updateModule);
-router.patch("/publishModule/:id", publishModule);
-router.post("/createModule", upload.single("video"), createModule);
-router.delete("/deleteModule/:id", deleteModule);
+const router = express.Router();
+
+router.get("/getAssignments", getAssignments);
+router.get("/getMyAssignedModules/:id", getMyAssignedModules);
+
+router.post(
+  "/createAssignment",
+  authMiddleware,
+  roleMiddleware("admin"),
+  createAssignment
+);
 
 export default router;
