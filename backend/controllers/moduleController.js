@@ -1,6 +1,6 @@
-const Module = require("../models/Module.js");
-const cloudinary = require("../config/cloudinary.js");
-const streamifier = require("streamifier");
+import Module from "../models/Module.js";
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
 
 // TODO: createModule, getModules, getModuleById, updateModule, publishModule, deleteModule
 
@@ -19,7 +19,7 @@ const uploadToCloudinary = (fileBuffer) => {
 };
 
 // New Module
-exports.createModule = async (req, res) =>{
+export const createModule = async (req, res) =>{
     try {
         const {title, description, reflectionQuestion, duration} = req.body
         let videoUrl;
@@ -51,7 +51,7 @@ exports.createModule = async (req, res) =>{
 }
 
 // get all module
-exports.getAllModule = async (req, res) => {
+export const getAllModule = async (req, res) => {
     try {
         const Modules = await Module.find();
 
@@ -66,7 +66,7 @@ exports.getAllModule = async (req, res) => {
 }
 
 // get Module by Id
-exports.getModuleById = async (req, res) => {
+export const getModuleById = async (req, res) => {
     try {
         const {id} = req.params;
         const requestedModule = await Module.findById(id);
@@ -82,7 +82,7 @@ exports.getModuleById = async (req, res) => {
 }
 
 // update Module
-exports.updateModule = async (req, res) => {
+export const updateModule = async (req, res) => {
     try {
         const {id} = req.params
         const updatedModule = await Module.findByIdAndUpdate(id, req.body,{
@@ -100,7 +100,7 @@ exports.updateModule = async (req, res) => {
 }
 
 // delete Module
-exports.deleteModule = async (req, res) => {
+export const deleteModule = async (req, res) => {
     try {
         const {id} = req.params
         const deletedModule = await Module.findByIdAndDelete(id);
@@ -115,7 +115,7 @@ exports.deleteModule = async (req, res) => {
 }
 
 // publish module
-exports.publishModule = async (req, res) => {
+export const publishModule = async (req, res) => {
     try {
         const {id} = req.params
         const module = await Module.findByIdAndUpdate(id, {

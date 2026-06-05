@@ -1,11 +1,11 @@
-const Assignment = require("../models/Assignment.js");
-const User = require("../models/User.js");
-const Notification = require("../models/Notification.js")
+import Assignment from "../models/Assignment.js";
+import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 
 
 // TODO: createAssignment, getAssignments, getMyAssignments
 // New Assignment
-exports.createAssignment = async (req, res) => {
+export const createAssignment = async (req, res) => {
     try {
         const {moduleId, assignedTo, dueDate, department} = req.body
         if (!assignedTo && !department) {
@@ -53,7 +53,7 @@ exports.createAssignment = async (req, res) => {
 }
 
 // Get Assignments
-exports.getAssignments = async (req, res) => {
+export const getAssignments = async (req, res) => {
     try {
         const assignments = await Assignment.find()
         .populate("moduleId", "title, status")
@@ -72,7 +72,7 @@ exports.getAssignments = async (req, res) => {
 }
 
 // get user assignment
-exports.getMyAssignedModules = async (req, res) => {
+export const getMyAssignedModules = async (req, res) => {
     try {
         const assignedModules = await Assignment.find(req.user.id)
             .populate("moduleId", "title status")

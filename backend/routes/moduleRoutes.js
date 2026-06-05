@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
-const upload = require("../middleware/uploadMiddleware.js");
-const {createModule, getAllModule, getModuleById, updateModule, deleteModule, publishModule} = require("../controllers/moduleController.js");
+import upload from "../middleware/uploadMiddleware.js";
+import {createModule, getAllModule, getModuleById, updateModule, deleteModule, publishModule} from "../controllers/moduleController.js";
 
 // TODO: wire up module controller methods
 router.get("/getAllModule", getAllModule);

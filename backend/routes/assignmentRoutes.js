@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-const {createAssignment, getAssignments, getMyAssignedModules} = require("../controllers/assignmentController.js");
+import {createAssignment, getAssignments, getMyAssignedModules} from "../controllers/assignmentController.js";
 
 // TODO: wire up assignment controller methods
 router.get("/getAssignments", getAssignments);
