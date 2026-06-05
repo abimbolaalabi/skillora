@@ -1,6 +1,4 @@
-import express from "express";
-const router = express.Router();
-
+import express, { Router } from "express";
 import authMiddleware from "../middleware/authMiddleware";
 import roleMiddleware from "../middleware/roleMiddleware";
 
