@@ -1,8 +1,11 @@
-import express, { Router } from "express";
-import authMiddleware from "../middleware/authMiddleware";
-import roleMiddleware from "../middleware/roleMiddleware";
+import express from "express";
+const router = express.Router();
+
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 import {
+    createUser,
     getUsers,
     getUserById,
     updateUser,
@@ -10,22 +13,28 @@ import {
     getDepartments
 } from "../controllers/userController.js";
 
+router.post(
+    "/createUser", 
+    authMiddleware, 
+    roleMiddleware("admin"), 
+    createUser);
+
 router.get(
     "/getUsers", 
     authMiddleware, 
     roleMiddleware("admin"), 
     getUsers);
 
+    
 router.get(
     "/getUserById/:id", 
     authMiddleware, 
-    getUserById);
+    getUserById); 
 
 router.put(
     "/updateUser/:id", 
     authMiddleware, 
     updateUser);
-
 router.delete(
     "/deleteUser/:id", 
     authMiddleware, 
