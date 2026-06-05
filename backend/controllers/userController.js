@@ -1,6 +1,28 @@
 // TODO: getUsers, getUserById, updateUser, deleteUser, getDepartments
 import User from "../models/User.js";
 
+const createUser = async(req, res) => {
+    try{
+        //to create a user, we need to check if the email already exists
+        const existingUser = await User.findOne({ email: req.body.email });
+        if (existingUser) {
+            return res.status(400).json({
+                error: "email already used"
+            });
+        }
+        const user = new User(req.body);
+        await user.save();
+        res.status(201).json({
+            message: "User created successfully",
+            user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
 const getUsers = async (req, res) => {
     try {
         const users = await User.find();
@@ -108,4 +130,4 @@ const getDepartments = async (req, res) => {
 };
 
 
-export { getUsers, getUserById, updateUser, deleteUser, getDepartments };
+export { createUser, getUsers, getUserById, updateUser, deleteUser, getDepartments };
