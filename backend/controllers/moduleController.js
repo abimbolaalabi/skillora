@@ -80,7 +80,7 @@ export const addLessonToModule = async (req, res) => {
         })
 
         return res
-        .status(200)
+        .status(201)
         .json({message: "lesson created successfully", data: createdLesson})
 
     } catch (error) {
@@ -96,7 +96,7 @@ export const getModuleWithLessons = async (req, res) => {
         const module = await Module.findById(moduleId);
         if (!module) {
             return res
-            .status(400).json({message: "module not found"})
+            .status(404).json({message: "module not found"})
         }
         const moduleLessons = await Lesson.find({moduleId: moduleId}).sort({order: 1 })
         return res

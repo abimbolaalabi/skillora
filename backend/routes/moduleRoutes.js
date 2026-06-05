@@ -10,17 +10,18 @@ import {
   updateModule,
   deleteModule,
   publishModule
-} from "../controllers/assignmentController.js";
+} from "../controllers/moduleController.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
 router.get("/getAllModule", getAllModule);
 router.get("/getModuleById/:id", getModuleById);
 router.get("/:moduleId/getModuleWithLessons", getModuleWithLessons);
-router.get("/:moduleId/addLessonToModule", addLessonToModule);
-router.patch("/updateModule/:id", updateModule);
-router.delete("/deleteModule/:id", deleteModule);
-router.patch("/publishModule/:id", publishModule);
+router.post("/:moduleId/addLessonToModule", authMiddleware, roleMiddleware("admin"), upload.single("video"), addLessonToModule);
+router.patch("/updateModule/:id", authMiddleware, roleMiddleware("admin"), updateModule);
+router.delete("/deleteModule/:id", authMiddleware, roleMiddleware("admin"), deleteModule);
+router.patch("/publishModule/:id", authMiddleware, roleMiddleware("admin"), publishModule);
 
 router.post(
   "/createModule",
