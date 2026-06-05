@@ -20,13 +20,26 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            Enumerator: ["admin", "manager", "employee"],
+            enum: ["admin", "manager", "employee"],
             default: "employee"
         },
         department: {
             type: String,
             required: true
         },
+        badges: [
+            {
+                badge: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Badge"
+        },
+        timeEarned: {
+            type: Date,
+            default: Date.now
+        } //The time the badge is earned
+    }
+],
+        
         isActive: {
             type: Boolean,
             default: true
@@ -37,5 +50,5 @@ const userSchema = new mongoose.Schema(
     timestamps: true 
 });
 
-const User = mongoose.model("User", userSchema);
+
 export default mongoose.model('User', userSchema);
