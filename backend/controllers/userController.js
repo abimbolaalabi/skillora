@@ -108,5 +108,4 @@ const getDepartments = async (req, res) => {
 };
 
 
-
 export { getUsers, getUserById, updateUser, deleteUser, getDepartments };

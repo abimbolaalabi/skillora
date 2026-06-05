@@ -1,13 +1,41 @@
 import express, { Router } from "express";
-import { getUsers, getUserById, updateUser, deleteUser, getDepartments } from "../controllers/userController.js";
-const router = express.Router();
+import authMiddleware from "../middleware/authMiddleware";
+import roleMiddleware from "../middleware/roleMiddleware";
 
-router.get("/getUsers", getUsers);
-router.get("/getUserById/:id", getUserById);
-router.patch("/updateUser/:id", updateUser);
-router.delete("/deleteUser/:id", deleteUser);
-router.get("/getDepartments", getDepartments);
+import {
+    getUsers,
+    getUserById,
+    updateUser,
+    deleteUser,
+    getDepartments
+} from "../controllers/userController.js";
 
-// TODO: wire up user controller methods
+router.get(
+    "/getUsers", 
+    authMiddleware, 
+    roleMiddleware("admin"), 
+    getUsers);
+
+router.get(
+    "/getUserById/:id", 
+    authMiddleware, 
+    getUserById);
+
+router.put(
+    "/updateUser/:id", 
+    authMiddleware, 
+    updateUser);
+
+router.delete(
+    "/deleteUser/:id", 
+    authMiddleware, 
+    roleMiddleware("admin"),
+    deleteUser);
+
+router.get(
+    "/getDepartments", 
+    authMiddleware, 
+    roleMiddleware("admin", "manager"), 
+    getDepartments);
 
 export default router;

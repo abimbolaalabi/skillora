@@ -66,6 +66,3 @@ progressSchema.pre('save', function(next) {
 
 
 export default mongoose.model('Progress', progressSchema);
-
-    
-

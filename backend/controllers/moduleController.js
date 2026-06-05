@@ -106,7 +106,7 @@ export const deleteModule = async (req, res) => {
         const deletedModule = await Module.findByIdAndDelete(id);
         return res
         .status(200)
-        .json({message: "user deleted successfully", data: deletedModule})
+        .json({message: "module deleted successfully", data: deletedModule})
     } catch (error) {
         return res
         .status(500)
@@ -119,9 +119,7 @@ export const publishModule = async (req, res) => {
     try {
         const {id} = req.params
         const module = await Module.findByIdAndUpdate(id, {
-            status: "published",
-            new: true
-        })
+            status: "published"}, {new: true, runValidators: true})
         if (!module) {
             return res
             .status(404).json({message: "module not found"})
