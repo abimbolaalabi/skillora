@@ -1,1 +1,263 @@
 // TODO: getProgress, updateVideoProgress, submitQuiz, submitReflection, getMyProgress
+import User from '../models/User.js';
+import Module from '../models/Module.js';
+import Progress from '../models/Progress.js';
+import Lesson from '../models/Lesson.js';
+
+
+export const startModule = async (req, res) => {
+  const { userId, moduleId } = req.body;
+
+  try {
+    let progress = await Progress.findOne({ userId, moduleId });
+
+    if (!progress) {
+      progress = new Progress({
+        userId,
+        moduleId,
+        completionStatus: 'In Progress',
+        startedAt: new Date()
+      });
+    } else if (progress.completionStatus === 'Not Started') {
+      progress.completionStatus = 'In Progress';
+      progress.startedAt = new Date();
+    } else {
+      return res.json({
+        success: true,
+        message: 'Module already started',
+        startedAt: progress.startedAt,
+        progress
+      });
+    }
+
+    await progress.save();
+
+    res.json({
+      success: true,
+      message: 'Module started successfully',
+      startedAt: progress.startedAt,
+      progress
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+// export const getProgress = async (req, res) => {
+//   try {
+//     const { moduleId } = req.query;
+//     const userId = req.user._id;
+
+//     if (!moduleId) {
+//       return res.status(400).json({ success: false, message: 'moduleId query is required' });
+//     }
+
+//     const module = await Module.findById(moduleId, 'title description').lean();
+//     if (!module) {
+//       return res.status(404).json({ success: false, message: 'Module not found' });
+//     }
+
+//     let progress = await Progress.findOne({ userId, moduleId })
+//       .populate('completedLessons.lessonId', 'title duration order')
+//       .lean();
+
+//     if (!progress) {
+//       progress = {
+//         userId,
+//         moduleId,
+//         completionStatus: 'Not Started',
+//         completedLessons: [],
+//         totalLessons: 0,
+//         completedLessonsCount: 0,
+//         progressPercentage: 0,
+//         module
+//       };
+//     } else {
+//       const completedLessonsCount = (progress.completedLessons || []).length;
+//       progress.completedLessonsCount = completedLessonsCount;
+//       progress.progressPercentage = progress.totalLessons
+//         ? Number(((completedLessonsCount / progress.totalLessons) * 100).toFixed(2))
+//         : 0;
+//       progress.module = module;
+//     }
+
+//     res.json({ success: true, progress });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// };
+
+export const getModuleProgress = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+    const userId = req.user?._id || req.query.userId || req.params.userId;
+
+    if (!moduleId) {
+      return res.status(400).json({ success: false, message: 'moduleId is required' });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required (authenticate or provide userId query param)' });
+    }
+
+    const progress = await Progress.findOne({ userId, moduleId })
+      .populate('completedLessons.lessonId', 'title duration order')
+      .lean();
+
+    if (!progress) {
+      return res.json({
+        success: true,
+        progress: {
+          userId,
+          moduleId,
+          completionStatus: 'Not Started',
+          completedLessons: [],
+          totalLessons: 0,
+          completedLessonsCount: 0,
+          progressPercentage: 0
+        }
+      });
+    }
+
+    const completedLessonsCount = (progress.completedLessons || []).length;
+    progress.completedLessonsCount = completedLessonsCount;
+    progress.progressPercentage = progress.totalLessons
+      ? Number(((completedLessonsCount / progress.totalLessons) * 100).toFixed(2))
+      : 0;
+
+    res.json({ success: true, progress });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getUserProgress = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const progress = await Progress.find({ userId })
+      .populate('moduleId', 'title description')
+      .lean();
+
+    const modules = progress.map((p) => {
+      const completedLessonsCount = (p.completedLessons || []).length;
+      return {
+        moduleId: p.moduleId?._id ?? p.moduleId,
+        title: p.moduleId?.title || null,
+        description: p.moduleId?.description || null,
+        status: p.completionStatus,
+        completedLessons: completedLessonsCount,
+        totalLessons: p.totalLessons || 0,
+        progressPercentage: p.totalLessons
+          ? Number(((completedLessonsCount / p.totalLessons) * 100).toFixed(2))
+          : 0,
+        startedAt: p.startedAt,
+        completedAt: p.completedAt
+      };
+    });
+
+    res.json({ success: true, modules });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getCompletionStats = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const totalModules = await Module.countDocuments();
+    const completed = await Progress.countDocuments({
+      userId,
+      completionStatus: 'Completed'
+    });
+
+    const percentage = totalModules ? Number(((completed / totalModules) * 100).toFixed(2)) : 0;
+
+    res.json({
+      success: true,
+      completedModules: completed,
+      totalModules,
+      percentage
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// export const updateProgress = async (req, res) => {
+//   const { userId, moduleId, status } = req.body;
+
+//   try {
+//     const progress = await Progress.findOneAndUpdate(
+//       { userId, moduleId },
+//       {
+//         completionStatus: status,
+//         ...(status === 'Completed' && { completedAt: new Date() })
+//       },
+//       { upsert: true, new: true }
+//     );
+
+//     res.json({ success: true, progress });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// };
+
+export const getUserDashboard = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const [modules, progressDocs] = await Promise.all([
+      Module.find().lean(),
+      Progress.find({ userId }).lean()
+    ]);
+
+    const progressByModule = new Map(
+      progressDocs.map((p) => [p.moduleId.toString(), p])
+    );
+
+    const moduleProgress = modules.map((module) => {
+      const progress = progressByModule.get(module._id.toString());
+      const completedLessons = (progress?.completedLessons || []).length;
+      const totalLessons = progress?.totalLessons || 0;
+      const percentage = totalLessons
+        ? Number(((completedLessons / totalLessons) * 100).toFixed(2))
+        : 0;
+
+      return {
+        moduleId: module._id,
+        title: module.title,
+        description: module.description,
+        status: progress?.completionStatus || 'Not Started',
+        completedLessons,
+        totalLessons,
+        progressPercentage: percentage,
+        startedAt: progress?.startedAt || null,
+        completedAt: progress?.completedAt || null
+      };
+    });
+
+    const stats = {
+      totalModules: modules.length,
+      notStarted: moduleProgress.filter((m) => m.status === 'Not Started').length,
+      inProgress: moduleProgress.filter((m) => m.status === 'In Progress').length,
+      completed: moduleProgress.filter((m) => m.status === 'Completed').length,
+      overallPercentage: modules.length
+        ? Number(
+            (
+              moduleProgress.reduce((sum, m) => sum + m.progressPercentage, 0) /
+              modules.length
+            ).toFixed(2)
+          )
+        : 0,
+      modules: moduleProgress
+    };
+
+    res.json({ success: true, stats });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
