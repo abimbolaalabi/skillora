@@ -11,13 +11,7 @@ const moduleSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    videoUrl: {
-        type: String
-    },
-    videoPublicId: {
-        type: String
-    },
-    reflectionQuestion: {
+     reflectionQuestion: {
         type: String,
         required: true
     },

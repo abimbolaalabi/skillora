@@ -10,6 +10,7 @@ import moduleRoutes from "./routes/moduleRoutes.js";
 import assignmentRoutes from "./routes/assignmentRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
+import lessonRoutes from "./routes/lessonRoutes.js"
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/modules', moduleRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/progress',    progressRoutes);
 app.use('/api/analytics',   analyticsRoutes);
+app.use('/api/lessons', lessonRoutes);
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
