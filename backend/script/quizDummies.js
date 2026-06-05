@@ -5,7 +5,7 @@ import Quiz from '../models/Quiz.js';
 dotenv.config();
 connectDB();
 
-const createQuiz = async () => {
+const quizDummies = async () => {
   try {
     await connectDB();
 
@@ -126,4 +126,4 @@ const createQuiz = async () => {
   }
 };
 
-createQuiz();
+quizDummies();
