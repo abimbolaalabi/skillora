@@ -36,7 +36,7 @@ export const createModule = async (req, res) =>{
         const newModule = await Module.create({
             title,
             description,
-            createdBy: req.user.id,
+            createdBy: req.user._id,
             reflectionQuestion,
             duration
         })

@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
+import "./config/env.js";
 
 import connectDB from './config/db.js';
 
@@ -14,7 +16,7 @@ import lessonRoutes from "./routes/lessonRoutes.js"
 import quizRoutes from "./routes/quizRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js"
 
-dotenv.config();
+
 
 connectDB();
 
