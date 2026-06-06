@@ -1,7 +1,7 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
-
+import { getUsers, getUserById, updateUser, deleteUser, getDepartments } from "../controllers/userController.js";
 // use auth/register & auth/login routes from authRoutes.js
 //to create users and login
 
