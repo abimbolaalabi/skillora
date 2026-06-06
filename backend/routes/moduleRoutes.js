@@ -2,21 +2,32 @@ import express from "express";
 import roleMiddleware from "../middleware/roleMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import {
-  createAssignment,
-  getAssignments,
-  getMyAssignedModules,
-} from "../controllers/assignmentController.js";
+  createModule,
+  addLessonToModule,
+  getModuleWithLessons,
+  getAllModule,
+  getModuleById,
+  updateModule,
+  deleteModule,
+  publishModule
+} from "../controllers/moduleController.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.get("/getAssignments", getAssignments);
-router.get("/getMyAssignedModules/:id", getMyAssignedModules);
+router.get("/getAllModule", getAllModule);
+router.get("/getModuleById/:id", getModuleById);
+router.get("/:moduleId/getModuleWithLessons", getModuleWithLessons);
+router.post("/:moduleId/addLessonToModule", authMiddleware, roleMiddleware("admin"), upload.single("video"), addLessonToModule);
+router.patch("/updateModule/:id", authMiddleware, roleMiddleware("admin"), updateModule);
+router.delete("/deleteModule/:id", authMiddleware, roleMiddleware("admin"), deleteModule);
+router.patch("/publishModule/:id", authMiddleware, roleMiddleware("admin"), publishModule);
 
 router.post(
-  "/createAssignment",
+  "/createModule",
   authMiddleware,
   roleMiddleware("admin"),
-  createAssignment
+  createModule
 );
 
 export default router;
