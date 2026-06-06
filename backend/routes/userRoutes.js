@@ -2,6 +2,8 @@ import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
 
+// use auth/register & auth/login routes from authRoutes.js
+//to create users and login
 import {
     createUser,
     getUsers,
