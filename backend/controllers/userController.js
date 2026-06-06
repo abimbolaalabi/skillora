@@ -1,45 +1,13 @@
 // TODO: getUsers, getUserById, updateUser, deleteUser, getDepartments
 import User from "../models/User.js";
-import bcrypt from "bcryptjs";
 
-const createUser = async(req, res) => {
-    try{
-        //to create a user, we need to check if the email already exists
-        const {name, email, password, role, department} = req.body;
-
-        const existingUser = await User.findOne({ email: req.body.email });
-        if (existingUser) {
-            return res.status(400).json({
-                error: "email already used"
-            });
-        }
-        //hash the password before saving to the database
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-            role,
-            department
-        });
-
-        await user.save();
-        res.status(201).json({
-            message: "User created successfully",
-            user
-        });
-    } catch (error) {
-        return res.status(500).json({
-            error: error.message
-        });
-    }
-}
+// use authRoutes.js
+// use auth/register & auth/login routes from authRoutes.js
+//to create users and login
 
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().select("-password");
         res.status(200).json({
             message: "Users retrieved successfully",
             users
@@ -54,7 +22,7 @@ const getUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id).select("-password");
         if (!user) {
             return res.status(404).json({
                 error: "User not found"
@@ -144,4 +112,4 @@ const getDepartments = async (req, res) => {
 };
 
 
-export { createUser, getUsers, getUserById, updateUser, deleteUser, getDepartments };
+export { getUsers, getUserById, updateUser, deleteUser, getDepartments };

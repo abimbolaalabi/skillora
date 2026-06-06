@@ -1,23 +1,13 @@
 import express from "express";
-const router = express.Router();
-
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
 
-import {
-    createUser,
-    getUsers,
-    getUserById,
-    updateUser,
-    deleteUser,
-    getDepartments
-} from "../controllers/userController.js";
+// use auth/register & auth/login routes from authRoutes.js
+//to create users and login
 
-router.post(
-    "/createUser", 
-    authMiddleware, 
-    roleMiddleware("admin"), 
-    createUser);
+
+const router = express.Router();
+
 
 router.get(
     "/getUsers", 
