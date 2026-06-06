@@ -93,9 +93,10 @@ export const getAssignments = async (req, res) => {
 // get user assignment
 export const getMyAssignedModules = async (req, res) => {
     try {
-        const assignedModules = await Assignment.find({assignedTo: req.user._id})
+        const userId = req.user._id || req.user.id
+        const assignedModules = await Assignment.find({assignedTo: userId})
             .populate("moduleId", "title status")
-            .populate("assignedTo", "name email")
+            .populate("assignedTo", "name email role")
             .populate("department", "name")
             .populate("assignedBy", "name email")
 

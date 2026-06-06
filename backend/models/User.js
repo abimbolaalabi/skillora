@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema(
             default: "employee"
         },
         department: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Department",
             required: true
         },
         badges: [
