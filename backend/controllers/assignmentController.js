@@ -28,7 +28,7 @@ export const createAssignment = async (req, res) => {
 
         if (module.status == "draft") {
             return res
-            .status("400").json({message: "Module not yet published"});
+            .status(400).json({message: "Module not yet published"});
         }
 
         const assignments = []
@@ -37,6 +37,7 @@ export const createAssignment = async (req, res) => {
             const assignment = await Assignment.create({
                 moduleId,
                 assignedTo,
+                department,
                 assignedBy: req.user._id,
                 dueDate
             })
@@ -63,7 +64,7 @@ export const createAssignment = async (req, res) => {
         }
         return res
         .status(201)
-        .json({message: "module created successfully", data: assignments})
+        .json({message: "assignment created successfully", data: assignments})
     } catch (error) {
         return res
         .status(500)

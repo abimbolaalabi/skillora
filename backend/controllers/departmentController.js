@@ -2,13 +2,13 @@ import Department from "../models/Department.js";
 
 export const createDepartment = async (req, res) => {
     try {
-        const {name, description} = req.body
-        const department = await Department.create({name, description})
+        const {name, description, supervisor} = req.body
+        const department = await Department.create({name, description, supervisor})
         return res
         .status(201).json({message: "department created successfully", data: department})
     } catch (error) {
         return res
-        .status(500).json({message: "error updating notification", error: error.message});
+        .status(500).json({message: "error updating department", error: error.message});
     }
 }
 
@@ -23,7 +23,7 @@ export const getDepartments = async (req, res) => {
         .status(200).json({message: "departments fetched successfully", data: departments})
     } catch (error) {
         return res
-        .status(500).json({message: "error updating notification", error: error.message});
+        .status(500).json({message: "error fetching department", error: error.message});
     }
 }
 

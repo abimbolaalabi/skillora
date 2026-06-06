@@ -23,7 +23,8 @@ const assignmentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["assigned", "in_progress", "completed"]
+        enum: ["assigned", "in_progress", "completed"],
+        default: "assigned"
     }
 }, { timestamps: true });
 

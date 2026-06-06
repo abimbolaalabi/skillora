@@ -14,7 +14,8 @@ import progressRoutes from "./routes/progressRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import lessonRoutes from "./routes/lessonRoutes.js"
 import quizRoutes from "./routes/quizRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js"
+import notificationRoutes from "./routes/notificationRoutes.js";
+import departmentRoutes from "./routes/departmentRoutes.js";
 
 
 
@@ -36,6 +37,7 @@ app.use('/api/analytics',   analyticsRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/departments', departmentRoutes);
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

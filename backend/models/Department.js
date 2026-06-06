@@ -12,8 +12,8 @@ const departmentSchema = new mongoose.Schema({
         trim: true
     },
     supervisor: {
-        type: String,
-        trim: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
     assignedModules: [{
         type: mongoose.Schema.Types.ObjectId,
