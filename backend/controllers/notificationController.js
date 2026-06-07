@@ -41,7 +41,7 @@ export const markMyAssignmentAsRead = async (req, res) => {
             .status(404).json({message: "notification not found"})
         }
         return res
-        .status(200).json({messsage: "Notification read", isRead: notification.isRead})
+        .status(200).json({message: "Notification read", isRead: notification.isRead})
     } catch (error) {
         return res
         .status(500).json({message: "error updating notification", error: error.message});
