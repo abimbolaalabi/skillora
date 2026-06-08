@@ -1,9 +1,13 @@
 // TODO: getUsers, getUserById, updateUser, deleteUser, getDepartments
 import User from "../models/User.js";
 
+// use authRoutes.js
+// use auth/register & auth/login routes from authRoutes.js
+//to create users and login
+
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().select("-password");
         res.status(200).json({
             message: "Users retrieved successfully",
             users
@@ -18,7 +22,7 @@ const getUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id).select("-password");
         if (!user) {
             return res.status(404).json({
                 error: "User not found"

@@ -1,14 +1,13 @@
-import express, { Router } from "express";
+import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
+import { getUsers, getUserById, updateUser, deleteUser, getDepartments } from "../controllers/userController.js";
+// use auth/register & auth/login routes from authRoutes.js
+//to create users and login
 
-import {
-    getUsers,
-    getUserById,
-    updateUser,
-    deleteUser,
-    getDepartments
-} from "../controllers/userController.js";
+
+const router = express.Router();
+
 
 const router = express.Router();
 router.get(
@@ -17,16 +16,16 @@ router.get(
     roleMiddleware("admin"), 
     getUsers);
 
+    
 router.get(
     "/getUserById/:id", 
     authMiddleware, 
-    getUserById);
+    getUserById); 
 
 router.put(
     "/updateUser/:id", 
     authMiddleware, 
     updateUser);
-
 router.delete(
     "/deleteUser/:id", 
     authMiddleware, 
