@@ -11,13 +11,22 @@ const moduleSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    lessons: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Lesson"
+    }],
+    totalLessons: {
+        type: Number,
+        default: 0
+    },
      reflectionQuestion: {
         type: String,
         required: true
     },
     duration: {
         type: Number,
-        default: 5
+        default: 0
+        
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
