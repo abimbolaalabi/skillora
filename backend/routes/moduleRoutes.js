@@ -27,6 +27,7 @@ router.post(
   "/createModule",
   authMiddleware,
   roleMiddleware("admin"),
+  upload.single("video"),
   createModule
 );
 

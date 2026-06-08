@@ -14,7 +14,7 @@ router.get(
     getAssignments);
 
 router.get(
-    "/getMyAssignedModules/:id", 
+    "/getMyAssignedModules", 
     authMiddleware,  
     getMyAssignedModules); //for employees to view their assigned modules
 
