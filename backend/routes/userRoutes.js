@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-import authMiddleware from "../middleware/authMiddleware";
-import roleMiddleware from "../middleware/roleMiddleware";
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 import {
     getUsers,
@@ -10,6 +10,7 @@ import {
     getDepartments
 } from "../controllers/userController.js";
 
+const router = express.Router();
 router.get(
     "/getUsers", 
     authMiddleware, 
