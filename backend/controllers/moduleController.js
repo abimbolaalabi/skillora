@@ -36,7 +36,7 @@ export const createModule = async (req, res) =>{
         const newModule = await Module.create({
             title,
             description,
-            createdBy: req.user.id, 
+            createdBy: req.user._id,
             reflectionQuestion,
             duration
         })
@@ -45,6 +45,11 @@ export const createModule = async (req, res) =>{
         .status(201).json({message: "module created successfully", data: newModule})
 
     } catch (error) {
+
+        if (uploadResult?.public_id) {
+            await deleteFromCloudinary(uploadResult.public_id);
+        }
+
         return res
         .status(500)
         .json({message: "error creating module", error: error.message})
@@ -56,6 +61,11 @@ export const addLessonToModule = async (req, res) => {
         const {moduleId} = req.params;
         const {title, overview, duration, order} = req.body;
 
+        if (!title || !duration || order === undefined) {
+            return res
+            .status(400).json({message: "title, duration and order are required"})
+        }
+
         
         const module = await Module.findById(moduleId);
         if (!module) {
@@ -65,6 +75,12 @@ export const addLessonToModule = async (req, res) => {
 
         if(!req.file) {
             return res.status(400).json({message: "Lesson video is required"})
+        }
+
+        const existingOrder = await Lesson.findOne({moduleId, order})
+        if (existingOrder) {
+            return res
+            .status(400).json({message: "Lesson order already exists"})
         }
 
         const uploadResult = await uploadToCloudinary(req.file.buffer);
@@ -78,6 +94,15 @@ export const addLessonToModule = async (req, res) => {
             videoUrl: uploadResult.secure_url,
             videoPublicId: uploadResult.public_id
         })
+
+        console.log("Before push:", module.lessons);
+
+        module.lessons.push(createdLesson._id) ;
+
+        console.log("After push:", module.lessons);
+        module.totalLessons = module.lessons.length;
+        module.duration = (module.duration || 0 + Number(duration)) ;
+        await module.save()
 
         return res
         .status(201)
