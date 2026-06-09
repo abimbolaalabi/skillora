@@ -1,6 +1,7 @@
 import Lesson from "../models/Lesson.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
+import Module from "../models/Module.js";
 
 const uploadToCloudinary = (fileBuffer) => {
     return new Promise ((resolve, reject) => {
@@ -21,6 +22,34 @@ const deleteFromCloudinary = async (publicId) => {
     await cloudinary.uploader.destroy(publicId, {
         resource_type: "video"
     });
+}
+
+// export const createLesson = async (req, res) => {
+//     try {
+//         const {moduleId, title, overview, duration, order} = req.body
+//         const module = await Module.findById(moduleId);
+//         let videoUrl;
+//         let videoPublicId;
+//         if (!module) {
+//             return res
+//             .status(404).json({message: "Assign to an existing module"})
+//         }
+//         if (req.file) {
+//             const uploadedVideo = await uploadToCloudinary(req.file.buffer);
+//             videoUrl = uploadedVideo.secure_url;
+//             videoPublicId = uploadedVideo.public_id
+//         }
+//     }
+// }
+export const getLessons = async (req, res) => {
+    try {
+        const lessons = await Lesson.find();
+        return res
+        .status(200).json({message: "lessons fetched successfully", data: lessons})
+    } catch (error) {
+        return res
+        .status(500).json({message: "error fetching lessons", error: error.message});
+    }
 }
 
 export const deleteLesson = async (req, res) => {
