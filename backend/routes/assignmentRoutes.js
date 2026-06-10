@@ -4,7 +4,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 
 const router = express.Router();
-import { createAssignment, getAssignments, getMyAssignedModules } from "../controllers/assignmentController.js";
+import { createAssignment, getAssignments, getMyAssignedModules, getAssignmentByRole, deleteAssignment } from "../controllers/assignmentController.js";
 
 // TODO: wire up assignment controller methods
 router.get(
@@ -17,6 +17,10 @@ router.get(
     "/getMyAssignedModules", 
     authMiddleware,  
     getMyAssignedModules); //for employees to view their assigned modules
+
+router.get("/getAssignmentByRole/:role", authMiddleware, getAssignmentByRole);
+
+router.delete("/deleteAssignment/:id", authMiddleware, deleteAssignment);
 
 router.post(
     "/createAssignment", 

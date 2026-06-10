@@ -8,18 +8,13 @@ import Module from "../models/Module.js"
 // New Assignment
 export const createAssignment = async (req, res) => {
     try {
-        const {moduleId, assignedTo, dueDate, department} = req.body
-        if (!assignedTo && !department) {
-            return res.status(401).json({message: "Assign to a user or department"})
+        const {moduleId, assignedTo, dueDate, department, role} = req.body
+        if (!assignedTo && !department && !role) {
+            return res.status(401).json({message: "Assign to a user, department or role"})
         }
 
         const module = await Module.findById(moduleId);
-        const alreadyAssigned = await Assignment.findOne({moduleId, assignedTo})
-
-        if (alreadyAssigned) {
-            return res
-            .status(400).json({message: "Module already assigned to user"});
-        }
+        
 
         if (!module) {
             return res
@@ -34,12 +29,19 @@ export const createAssignment = async (req, res) => {
         const assignments = []
 
         if (assignedTo) {
+            const alreadyAssigned = await Assignment.findOne({moduleId, assignedTo})
+
+            if (alreadyAssigned) {
+                return res
+                .status(400).json({message: "Module already assigned to user"});
+            }
             const assignment = await Assignment.create({
                 moduleId,
                 assignedTo,
                 department,
                 assignedBy: req.user._id,
-                dueDate
+                dueDate,
+                role
             })
 
             await Notification.create({
@@ -49,17 +51,40 @@ export const createAssignment = async (req, res) => {
             assignments.push(assignment);
         }
         if (department) {
-            const users = await User.find({department, role: "employee", isActive: true})
+            const users = await User.find({department, isActive: true})
             for (const user of users) {
+                const existingAssignment = await Assignment.findOne({moduleId, assignedTo: user._id});
+                if (existingAssignment) continue;
                 const assignment = await Assignment.create({
                     moduleId,
                     assignedTo: user._id,
                     department,
                     assignedBy: req.user._id,
-                    dueDate
+                    dueDate,
+                    role
                 })
                 await Notification.create({userId: user._id, message: "A new learning module has been assigned to your department."});
                 assignments.push(assignment)
+            }
+        }
+
+        if (role) {
+            const users = await User.find({role: role, isActive: true});
+            for (const user of users) {
+                const existingAssignment = await Assignment.findOne({moduleId, assignedTo: user._id})
+                if (existingAssignment) continue;
+                const assignment = await Assignment.create({
+                    moduleId,
+                    assignedTo: user._id,
+                    assignedBy:req.user._id,
+                    dueDate,
+                    role
+                })
+                assignments.push(assignment)
+                await Notification.create({
+                    userId: user._id,
+                    massage: "A new learning module has been assigned to your role."
+                })
             }
         }
         return res
@@ -69,6 +94,18 @@ export const createAssignment = async (req, res) => {
         return res
         .status(500)
         .json({message: "error assigning", error: error.message})
+    }
+}
+
+export const getAssignmentByRole = async (req, res) => {
+    try {
+        const {role} = req.params;
+        const roleAssignment = await Assignment.find({role})
+        return res
+        .status(200).json({message: "Assignment fetched successfully", data: roleAssignment});
+    } catch (error) {
+        return res
+        .status(500).json({message: "error fetching Assignment", error: error.message})
     }
 }
 
@@ -103,7 +140,7 @@ export const getMyAssignedModules = async (req, res) => {
 
             if (assignedModules.length === 0) {
                 return res
-                .status(401)
+                .status(400)
                 .json({message:"no module assigned to you yet"})
             }
 
@@ -115,5 +152,21 @@ export const getMyAssignedModules = async (req, res) => {
         return res
         .status(500)
         .json({message: "error fetching assigned modules", error: error.message})
+    }
+}
+
+export const deleteAssignment = async (req, res) => {
+    try {
+        const {id} = req.params;
+        const deletedAssignment = await Assignment.findByIdAndDelete(id);
+        if (!deletedAssignment) {
+            return res.status(400).json({message: "assignment not found"});
+        }
+        return res
+        .status(200)
+        .json({message: "assignment deleted successfully", data: deletedAssignment})
+    } catch (error) {
+        return res
+        .status(500).json({message: "error deleting assignment", error: error.message});
     }
 }
