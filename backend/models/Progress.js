@@ -28,6 +28,7 @@ const progressSchema = new mongoose.Schema({
     }],
     totalLessons: {
         type: Number,
+        ref: "Lesson",
         default: 0
     },
     startedAt: {
@@ -65,4 +66,4 @@ progressSchema.pre('save', function(next) {
 
 
 
-export default mongoose.model('Progress', progressSchema);
+export default mongoose.model("Progress", progressSchema);

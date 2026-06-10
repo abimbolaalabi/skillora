@@ -5,10 +5,6 @@ import { getUsers, getUserById, updateUser, deleteUser, getDepartments } from ".
 // use auth/register & auth/login routes from authRoutes.js
 //to create users and login
 
-
-const router = express.Router();
-
-
 const router = express.Router();
 router.get(
     "/getUsers", 
