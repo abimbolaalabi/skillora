@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import hashPassword from "../utils/hashPassword.js";
 import comparePassword from "../utils/comparePassword.js";
+import Department from "../models/Department.js"
 
 const register = async (req, res) => {
     try {
@@ -23,6 +24,12 @@ const register = async (req, res) => {
             role,
             department
         });
+
+        await Department.findByIdAndUpdate(department, {
+            $addToSet: {
+                members: user._id
+            }
+        })
         
         await user.save();
         res.status(201).json({
