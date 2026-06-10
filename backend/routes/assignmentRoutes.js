@@ -20,7 +20,7 @@ router.get(
 
 router.get("/getAssignmentByRole/:role", authMiddleware, getAssignmentByRole);
 
-router.delete("/deleteAssignment/:id", authMiddleware, deleteAssignment);
+router.delete("/deleteAssignment/:id", authMiddleware,  roleMiddleware("admin", "manager"), deleteAssignment);
 
 router.post(
     "/createAssignment", 
