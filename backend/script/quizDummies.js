@@ -24,7 +24,7 @@ const quizDummies = async () => {
       questions: [
         {
           questionText: 'What is the output of typeof null?',
-          questionType: 'single-choice',
+          questionType: 'multiple-choice',
           options: [
             { text: 'object', isCorrect: true },
             { text: 'null', isCorrect: false },
@@ -34,7 +34,7 @@ const quizDummies = async () => {
         },
         {
           questionText: 'Which keyword declares a block-scoped variable?',
-          questionType: 'single-choice',
+          questionType: 'multiple-choice',
           options: [
             { text: 'var', isCorrect: false },
             { text: 'let', isCorrect: true },
@@ -44,7 +44,7 @@ const quizDummies = async () => {
         },
         {
           questionText: 'Which array method returns a new array by transforming each element?',
-          questionType: 'single-choice',
+          questionType: 'multiple-choice',
           options: [
             { text: 'forEach', isCorrect: false },
             { text: 'map', isCorrect: true },
@@ -54,7 +54,7 @@ const quizDummies = async () => {
         },
         {
           questionText: 'let variables can be re-declared in the same scope.',
-          questionType: 'true-false',
+          questionType: 'multiple-choice',
           options: [
             { text: 'True', isCorrect: false },
             { text: 'False', isCorrect: true }
@@ -63,7 +63,7 @@ const quizDummies = async () => {
         },
         {
           questionText: 'Which built-in method converts a JSON string into a JavaScript object?',
-          questionType: 'single-choice',
+          questionType: 'multiple-choice',
           options: [
             { text: 'JSON.parse()', isCorrect: true },
             { text: 'JSON.stringify()', isCorrect: false },
@@ -73,13 +73,17 @@ const quizDummies = async () => {
         },
         {
           questionText: 'Write the syntax of an arrow function that returns x * 2.',
-          questionType: 'short-answer',
-          correctAnswer: ['x => x * 2', '(x) => x * 2'],
+          questionType: 'multiple-choice',
+          options: [
+            { text: 'x => x * 2', isCorrect: true },
+            { text: '(x) => { return x * 2 }', isCorrect: false },
+            { text: 'function(x) { x * 2 }', isCorrect: false }
+          ],
           points: 2
         },
         {
           questionText: 'Which operator checks strict equality in JavaScript?',
-          questionType: 'single-choice',
+          questionType: 'multiple-choice',
           options: [
             { text: '==', isCorrect: false },
             { text: '===', isCorrect: true },
@@ -101,13 +105,17 @@ const quizDummies = async () => {
         },
         {
           questionText: 'What is the value of a after executing: let a = [1, 2]; a.push(3);?',
-          questionType: 'short-answer',
-          correctAnswer: ['[1,2,3]', '[1, 2, 3]'],
+          questionType: 'multiple-choice',
+          options: [
+            { text: '[1,2,3]', isCorrect: true },
+            { text: '[1,2]', isCorrect: false },
+            { text: '[1,2,3,4]', isCorrect: false }
+          ],
           points: 1
         },
         {
           questionText: 'const declarations must be initialized when they are created.',
-          questionType: 'true-false',
+          questionType: 'multiple-choice',
           options: [
             { text: 'True', isCorrect: true },
             { text: 'False', isCorrect: false }

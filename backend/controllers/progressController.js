@@ -6,7 +6,7 @@ import Lesson from '../models/Lesson.js';
 
 
 export const startModule = async (req, res) => {
-  const { userId, moduleId } = req.body;
+  const { userId, moduleId } = req.params;
 
   try {
     let progress = await Progress.findOne({ userId, moduleId });
@@ -103,6 +103,13 @@ export const getModuleProgress = async (req, res) => {
       return res.status(400).json({ success: false, message: 'userId is required (authenticate or provide userId query param)' });
     }
 
+    const module = await Module.findById(moduleId).lean();
+    if (!module) {
+      return res.status(404).json({ success: false, message: 'Module not found' });
+    }
+
+    const moduleTotalLessons = module.totalLessons || await Lesson.countDocuments({ moduleId });
+
     const progress = await Progress.findOne({ userId, moduleId })
       .populate('completedLessons.lessonId', 'title duration order')
       .lean();
@@ -115,20 +122,30 @@ export const getModuleProgress = async (req, res) => {
           moduleId,
           completionStatus: 'Not Started',
           completedLessons: [],
-          totalLessons: 0,
+          totalLessons: moduleTotalLessons,
           completedLessonsCount: 0,
-          progressPercentage: 0
+          progressPercentage: 0,
+          module
         }
       });
     }
 
     const completedLessonsCount = (progress.completedLessons || []).length;
-    progress.completedLessonsCount = completedLessonsCount;
-    progress.progressPercentage = progress.totalLessons
-      ? Number(((completedLessonsCount / progress.totalLessons) * 100).toFixed(2))
+    const totalLessons = progress.totalLessons || moduleTotalLessons;
+    const progressPercentage = totalLessons
+      ? Number(((completedLessonsCount / totalLessons) * 100).toFixed(2))
       : 0;
 
-    res.json({ success: true, progress });
+    res.json({
+      success: true,
+      progress: {
+        ...progress,
+        totalLessons,
+        completedLessonsCount,
+        progressPercentage,
+        module
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -138,25 +155,29 @@ export const getUserProgress = async (req, res) => {
   try {
     const { userId } = req.params;
     const progress = await Progress.find({ userId })
-      .populate('moduleId', 'title description')
+      .populate('moduleId', 'title description totalLessons')
       .lean();
 
-    const modules = progress.map((p) => {
+    const modules = await Promise.all(progress.map(async (p) => {
       const completedLessonsCount = (p.completedLessons || []).length;
+      const moduleTotalLessons = p.moduleId?.totalLessons || await Lesson.countDocuments({ moduleId: p.moduleId?._id ?? p.moduleId });
+      const totalLessons = p.totalLessons || moduleTotalLessons;
+      const progressPercentage = totalLessons
+        ? Number(((completedLessonsCount / totalLessons) * 100).toFixed(2))
+        : 0;
+
       return {
         moduleId: p.moduleId?._id ?? p.moduleId,
         title: p.moduleId?.title || null,
         description: p.moduleId?.description || null,
         status: p.completionStatus,
         completedLessons: completedLessonsCount,
-        totalLessons: p.totalLessons || 0,
-        progressPercentage: p.totalLessons
-          ? Number(((completedLessonsCount / p.totalLessons) * 100).toFixed(2))
-          : 0,
+        totalLessons,
+        progressPercentage,
         startedAt: p.startedAt,
         completedAt: p.completedAt
       };
-    });
+    }));
 
     res.json({ success: true, modules });
   } catch (error) {
@@ -218,26 +239,29 @@ export const getUserDashboard = async (req, res) => {
       progressDocs.map((p) => [p.moduleId.toString(), p])
     );
 
-    const moduleProgress = modules.map((module) => {
-      const progress = progressByModule.get(module._id.toString());
-      const completedLessons = (progress?.completedLessons || []).length;
-      const totalLessons = progress?.totalLessons || 0;
-      const percentage = totalLessons
-        ? Number(((completedLessons / totalLessons) * 100).toFixed(2))
-        : 0;
+    const moduleProgress = await Promise.all(
+      modules.map(async (module) => {
+        const progress = progressByModule.get(module._id.toString());
+        const completedLessons = (progress?.completedLessons || []).length;
+        const moduleTotalLessons = module.totalLessons || await Lesson.countDocuments({ moduleId: module._id });
+        const totalLessons = progress?.totalLessons || moduleTotalLessons || 0;
+        const percentage = totalLessons
+          ? Number(((completedLessons / totalLessons) * 100).toFixed(2))
+          : 0;
 
-      return {
-        moduleId: module._id,
-        title: module.title,
-        description: module.description,
-        status: progress?.completionStatus || 'Not Started',
-        completedLessons,
-        totalLessons,
-        progressPercentage: percentage,
-        startedAt: progress?.startedAt || null,
-        completedAt: progress?.completedAt || null
-      };
-    });
+        return {
+          moduleId: module._id,
+          title: module.title,
+          description: module.description,
+          status: progress?.completionStatus || 'Not Started',
+          completedLessons,
+          totalLessons,
+          progressPercentage: percentage,
+          startedAt: progress?.startedAt || null,
+          completedAt: progress?.completedAt || null
+        };
+      })
+    );
 
     const stats = {
       totalModules: modules.length,
