@@ -8,7 +8,8 @@ const createBadge = async (req, res) => {
             name,
             description,
             iconUrl,
-            criteria
+            criteria,
+            category 
         });
         res.status(201).json(newBadge);
     } catch (error) {
@@ -39,7 +40,7 @@ const getBadgeById = async (req, res) => {
 
 const updateBadge = async (req, res) => {
     try {
-        const { name, description, criteria } = req.body;
+        const { name, description, criteria, iconUrl, category } = req.body;
         const updatedBadge = await Badge.findByIdAndUpdate(
             req.params.id,
             { name, description, criteria },

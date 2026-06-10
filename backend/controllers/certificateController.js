@@ -1,13 +1,13 @@
 import Certificate from "../models/Certificate.js";
 import User from "../models/User.js";
-import Course from "../models/Module.js";
+import Module from "../models/Module.js";
 
 // Create Certificate
 export const createCertificate = async (req, res) => {
     try {
         const {
             employee,
-            course,
+            Module,
             score,
             certificateUrl
         } = req.body;
@@ -19,16 +19,16 @@ export const createCertificate = async (req, res) => {
             });
         }
 
-        const courseExists = await Course.findById(course);
-        if (!courseExists) {
+        const moduleExists = await Module.findById(Module);
+        if (!moduleExists) {
             return res.status(404).json({
-                message: "Course not found"
+                message: "Module not found"
             });
         }
 
         const certificate = await Certificate.create({
             employee,
-            course,
+            Module,
             score,
             certificateUrl,
             certificateNumber: `CERT-${Date.now()}`
@@ -51,7 +51,7 @@ export const getCertificates = async (req, res) => {
     try {
         const certificates = await Certificate.find()
             .populate("employee", "name email")
-            .populate("course", "title");
+            .populate("Module", "title");
 
         res.status(200).json({
             count: certificates.length,
@@ -70,7 +70,7 @@ export const getCertificateById = async (req, res) => {
     try {
         const certificate = await Certificate.findById(req.params.id)
             .populate("employee", "name email")
-            .populate("course", "title");
+            .populate("Module", "title");
 
         if (!certificate) {
             return res.status(404).json({
