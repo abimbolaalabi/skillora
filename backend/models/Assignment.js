@@ -14,6 +14,10 @@ const assignmentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Department"
     },
+    role: {
+        type: String,
+        enum: ["admin", "manager", "employee"]
+    },
     assignedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"

@@ -16,6 +16,8 @@ import lessonRoutes from "./routes/lessonRoutes.js"
 import quizRoutes from "./routes/quizRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
+import badgeRoutes from "./routes/badgeRoutes.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
 
 
 
@@ -38,8 +40,14 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/departments', departmentRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/certificates', certificateRoutes)
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-
+app.get("/", (req, res) => {
+    res.json({
+        message: "Skillora API is running"
+    });
+});
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Skillora server running on port ${PORT}`));

@@ -23,7 +23,6 @@ const badgeSchema = new mongoose.Schema({
     },
     score: {
         type: Number,
-        required: true,
         min: 50,
         max: 100
     },

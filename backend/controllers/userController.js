@@ -50,6 +50,7 @@ const updateUser = async (req, res) => {
         const allowedUpdates = {
             name: req.body.name,
             email: req.body.email,
+            role: req.body.role,
             department: req.body.department,
             isActive: req.body.isActive
         };
@@ -58,7 +59,7 @@ const updateUser = async (req, res) => {
             req.params.id,
             { $set: allowedUpdates },
             { new: true }
-        );
+        ); // 
 
         if (!user) {
             return res.status(404).json({
