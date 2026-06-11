@@ -15,6 +15,10 @@ const moduleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Lesson"
     }],
+    quizzes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Quiz"
+    }],
     totalLessons: {
         type: Number,
         default: 0
