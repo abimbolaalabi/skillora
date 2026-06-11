@@ -40,8 +40,8 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/departments', departmentRoutes);
-app.use('api/badges', badgeRoutes);
-app.use('api/certificates', certificateRoutes)
+app.use('/api/badges', badgeRoutes);
+app.use('/api/certificates', certificateRoutes)
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

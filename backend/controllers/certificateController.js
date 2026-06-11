@@ -47,7 +47,7 @@ export const createCertificate = async (req, res) => {
 };
 
 // Get All Certificates
-export const getCertificates = async (req, res) => {
+export const getAllCertificates = async (req, res) => {
     try {
         const certificates = await Certificate.find()
             .populate("employee", "name email")

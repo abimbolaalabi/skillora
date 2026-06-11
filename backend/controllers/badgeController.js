@@ -55,4 +55,4 @@ const updateBadge = async (req, res) => {
     }
 };
 
-export default { createBadge, getAllBadges, getBadgeById, updateBadge };
+export { createBadge, getAllBadges, getBadgeById, updateBadge };
