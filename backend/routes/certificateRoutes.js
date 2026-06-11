@@ -8,3 +8,6 @@ const router = express.Router();
 router.post("/createCertificate", authMiddleware, roleMiddleware("admin", "manager"), createCertificate);
 router.get("/getAllCertificates", authMiddleware, getAllCertificates);
 router.get("/getCertificateById/:id", authMiddleware, getCertificateById);
+
+
+export default router

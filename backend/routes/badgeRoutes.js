@@ -9,3 +9,5 @@ router.post("/createBadge", authMiddleware, roleMiddleware("admin"), createBadge
 router.get("/getAllBadges", authMiddleware, getAllBadges);
 router.get("/getBadgeById/:id", authMiddleware, getBadgeById);
 router.patch("/updateBadge/:id", authMiddleware, roleMiddleware("admin"), updateBadge);
+
+export default router
