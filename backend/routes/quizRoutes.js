@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/getAllQuiz', getAllQuizzes);
 router.get('/module/:moduleId', getQuizzesByModule);
-router.post('/createQuiz', createQuiz);
+router.post('/createQuiz', authMiddleware, createQuiz);
 router.post('/:quizId/submit/:userId', submitQuiz);
 router.get('/:quizId/score/:userId', getQuizScore);
 
