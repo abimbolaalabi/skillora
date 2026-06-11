@@ -44,6 +44,10 @@ app.use('/api/badges', badgeRoutes);
 app.use('/api/certificates', certificateRoutes)
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-
+app.get("/", (req, res) => {
+    res.json({
+        message: "Skillora API is running"
+    });
+});
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Skillora server running on port ${PORT}`));
