@@ -4,7 +4,7 @@ import Quiz from '../models/Quiz.js';
 export const submitQuiz = async (req, res) => {
   try {
     const { quizId, userId } = req.params;
-    const { answers, timeSpent } = req.body;
+    const { answers } = req.body;
 
     // Validation
     if (!quizId) {
@@ -31,7 +31,7 @@ export const submitQuiz = async (req, res) => {
     }
 
     // Auto-grade and submit
-    const submission = quiz.submitQuiz(userId, answers, timeSpent || 0);
+    const submission = quiz.submitQuiz(userId, answers);
     await quiz.save();
 
     // Prepare response
@@ -87,6 +87,65 @@ export const getQuizScore = async (req, res) => {
     });
     
   } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const createQuiz = async (req, res) => {
+  try {
+    const {
+      title,
+      moduleId,
+      questions,
+      passingPercentage = 70,
+      isPublished = false
+    } = req.body;
+
+    if (!title || !moduleId || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title, moduleId, and questions are required'
+      });
+    }
+
+    const quiz = new Quiz({
+      title,
+      moduleId,
+      questions,
+      passingPercentage,
+      isPublished
+    });
+
+    await quiz.save();
+
+    res.status(201).json({ success: true, data: quiz });
+  } catch (error) {
+    console.error('Create quiz error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getAllQuizzes = async (req, res) => {
+  try {
+    const quizzes = await Quiz.find().lean();
+    res.json({ success: true, data: quizzes });
+  } catch (error) {
+    console.error('Get all quizzes error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getQuizzesByModule = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+    if (!moduleId) {
+      return res.status(400).json({ success: false, message: 'moduleId is required' });
+    }
+
+    const quizzes = await Quiz.find({ moduleId }).lean();
+    res.json({ success: true, data: quizzes });
+  } catch (error) {
+    console.error('Get quizzes by module error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

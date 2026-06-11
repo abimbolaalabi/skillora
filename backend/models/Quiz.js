@@ -1,3 +1,4 @@
+
 // models/Quiz.js
 import mongoose from 'mongoose';
 
@@ -6,16 +7,16 @@ const quizSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  description: String,
+  moduleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Module',
+    required: true
+  },
   passingPercentage: {
     type: Number,
     required: true,
     min: 0,
     max: 100
-  },
-  durationMinutes: {
-    type: Number,
-    required: true
   },
   isPublished: {
     type: Boolean,
@@ -78,16 +79,12 @@ const quizSchema = new mongoose.Schema({
     submittedAt: {
       type: Date,
       default: Date.now
-    },
-    timeSpent: {
-      type: Number, // in minutes
-      default: 0
     }
   }]
 }, { timestamps: true });
 
 // Method to autograde and submit quiz
-quizSchema.methods.submitQuiz = function(userId, userAnswers, timeSpent = 0) {
+quizSchema.methods.submitQuiz = function(userId, userAnswers) {
   // Find if user already submitted
   let existingSubmission = this.submissions.find(
     sub => sub.userId.toString() === userId.toString()
@@ -131,8 +128,7 @@ quizSchema.methods.submitQuiz = function(userId, userAnswers, timeSpent = 0) {
     totalScore,
     percentage,
     passed,
-    submittedAt: new Date(),
-    timeSpent
+    submittedAt: new Date()
   };
   
   // Update or create submission
