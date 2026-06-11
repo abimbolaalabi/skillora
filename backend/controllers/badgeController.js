@@ -2,7 +2,7 @@ import Badge from "../models/Badge.js";
 
 const createBadge = async (req, res) => {
     try {
-        const { name, description, criteria } = req.body;
+        const { name, description, criteria, category} = req.body;
         const iconUrl = req.file ? req.file.path : null;
         const newBadge = await Badge.create({
             name,
@@ -43,7 +43,7 @@ const updateBadge = async (req, res) => {
         const { name, description, criteria, iconUrl, category } = req.body;
         const updatedBadge = await Badge.findByIdAndUpdate(
             req.params.id,
-            { name, description, criteria },
+            { name, description, criteria, category, iconUrl: req.file ? req.file.path : iconUrl },
             { new: true }
         );
         if (!updatedBadge) {
