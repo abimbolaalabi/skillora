@@ -1,13 +1,41 @@
 import express from "express";
-import { createBadge, getAllBadges, getBadgeById, updateBadge } from "../controllers/badgeController.js";
+import uploadImage from "../middleware/uploadImage.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
 
+import {
+createBadge,
+getAllBadges,
+getBadgeById,
+updateBadge,
+deleteBadge
+} from "../controllers/badgeController.js";
+
 const router = express.Router();
 
-router.post("/createBadge", authMiddleware, roleMiddleware("admin"), createBadge);
-router.get("/getAllBadges", authMiddleware, getAllBadges);
-router.get("/getBadgeById/:id", authMiddleware, getBadgeById);
-router.patch("/updateBadge/:id", authMiddleware, roleMiddleware("admin"), updateBadge);
+//Public Routes
 
-export default router
+router.get("/", getAllBadges);
+router.get("/:id", getBadgeById);
+
+
+// Admin Routes
+
+router.post("/",
+    authMiddleware, 
+    roleMiddleware("admin"), 
+    uploadImage.single("icon"), 
+    createBadge);
+
+router.patch("/:id", 
+    authMiddleware, 
+    roleMiddleware("admin"), 
+    uploadImage.single("file"), 
+    updateBadge);
+
+router.delete("/:id", 
+    authMiddleware, 
+    roleMiddleware("admin"), 
+    deleteBadge);
+
+export default router;
