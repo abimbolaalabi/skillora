@@ -2,6 +2,7 @@ import Assignment from "../models/Assignment.js";
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
 import Module from "../models/Module.js"
+import Department from "../models/Module.js"
 
 
 // TODO: createAssignment, getAssignments, getMyAssignments
@@ -44,6 +45,12 @@ export const createAssignment = async (req, res) => {
                 role
             })
 
+            await User.findByIdAndUpdate(assignedTo, {
+                $addToSet: {
+                    modules: moduleId
+                }
+            })
+
             await Notification.create({
                 userId: assignedTo,
                 message: "A new learning module has been assigned to you."
@@ -62,6 +69,11 @@ export const createAssignment = async (req, res) => {
                     assignedBy: req.user._id,
                     dueDate,
                     role
+                })
+                await Department.findByIdAndUpdate(department, {
+                    $addToSet: {
+                        assignedModules: moduleId
+                    }
                 })
                 await Notification.create({userId: user._id, message: "A new learning module has been assigned to your department."});
                 assignments.push(assignment)

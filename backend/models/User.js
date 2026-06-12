@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
             ref: 'Department',
             required: true
         },
+        modules: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Module"
+        }],
         badges: [
             {
                 badge: {
