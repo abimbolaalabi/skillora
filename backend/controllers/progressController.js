@@ -46,50 +46,6 @@ export const startModule = async (req, res) => {
   }
 };
 
-// export const getProgress = async (req, res) => {
-//   try {
-//     const { moduleId } = req.query;
-//     const userId = req.user._id;
-
-//     if (!moduleId) {
-//       return res.status(400).json({ success: false, message: 'moduleId query is required' });
-//     }
-
-//     const module = await Module.findById(moduleId, 'title description').lean();
-//     if (!module) {
-//       return res.status(404).json({ success: false, message: 'Module not found' });
-//     }
-
-//     let progress = await Progress.findOne({ userId, moduleId })
-//       .populate('completedLessons.lessonId', 'title duration order')
-//       .lean();
-
-//     if (!progress) {
-//       progress = {
-//         userId,
-//         moduleId,
-//         completionStatus: 'Not Started',
-//         completedLessons: [],
-//         totalLessons: 0,
-//         completedLessonsCount: 0,
-//         progressPercentage: 0,
-//         module
-//       };
-//     } else {
-//       const completedLessonsCount = (progress.completedLessons || []).length;
-//       progress.completedLessonsCount = completedLessonsCount;
-//       progress.progressPercentage = progress.totalLessons
-//         ? Number(((completedLessonsCount / progress.totalLessons) * 100).toFixed(2))
-//         : 0;
-//       progress.module = module;
-//     }
-
-//     res.json({ success: true, progress });
-//   } catch (error) {
-//     res.status(500).json({ success: false, error: error.message });
-//   }
-// };
-
 export const getModuleProgress = async (req, res) => {
   try {
     const { moduleId } = req.params;
@@ -285,3 +241,38 @@ export const getUserDashboard = async (req, res) => {
   }
 };
 
+export const completeLesson = async (req, res) => {
+  try {
+    const { userId, moduleId, lessonId } = req.params;
+    if (!userId || !moduleId || !lessonId) {
+      return res.status(400).json({ success: false, message: 'userId, moduleId and lessonId required' });
+    }
+    const module = await Module.findById(moduleId);
+    if (!module) return res.status(404).json({ success: false, message: 'Module not found' });
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) return res.status(404).json({ success: false, message: 'Lesson not found' });
+
+    let progress = await Progress.findOne({ userId, moduleId });
+    if (!progress) {
+      progress = new Progress({
+        userId,
+        moduleId,
+        startedAt: new Date(),
+        completionStatus: 'In Progress'
+      });
+    }
+    // avoid duplicate completed entries
+    const already = (progress.completedLessons || []).some(c => c.lessonId.toString() === lessonId.toString());
+    if (!already) {
+      progress.completedLessons.push({ lessonId, completedAt: new Date() });
+    }
+    // ensure totalLessons is set (fallback to module.totalLessons or count)
+    progress.totalLessons = progress.totalLessons || module.totalLessons || (await Lesson.countDocuments({ moduleId }));
+
+    await progress.save();
+
+    res.json({ success: true, progress });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
