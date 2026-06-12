@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Module from '../models/Module.js';
 import Progress from '../models/Progress.js';
 import Lesson from '../models/Lesson.js';
+import Assignment from "../models/Assignment.js";
 
 
 export const startModule = async (req, res) => {
@@ -18,6 +19,8 @@ export const startModule = async (req, res) => {
         completionStatus: 'In Progress',
         startedAt: new Date()
       });
+      const assignmentInitiated = await Assignment.findOneAndUpdate({moduleId: moduleId, assignedTo: userId}, {status: "in_progress"}, {new: true})
+      
     } else if (progress.completionStatus === 'Not Started') {
       progress.completionStatus = 'In Progress';
       progress.startedAt = new Date();
