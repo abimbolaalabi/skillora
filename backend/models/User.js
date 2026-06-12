@@ -28,6 +28,25 @@ const userSchema = new mongoose.Schema(
             ref: 'Department',
             required: true
         },
+        assignments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Assignment"
+        }],
+        onboardingStatus: {
+            type: String,
+            enum: ["not started", "in progress", "completed"],
+            default: "not started"
+        },
+        tracking: {
+            type: String
+        },
+        modules: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Module"
+        }],
+        action: {
+            type: String
+        },
         badges: [
             {
                 badge: {
@@ -38,9 +57,7 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: Date.now
         } //The time the badge is earned
-    }
-],
-        
+                }],
         isActive: {
             type: Boolean,
             default: true

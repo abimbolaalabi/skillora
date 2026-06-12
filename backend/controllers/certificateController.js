@@ -1,150 +1,181 @@
 import Certificate from "../models/Certificate.js";
-import User from "../models/User.js";
-import Module from "../models/Module.js";
+import cloudinary from "../config/cloudinary.js";
 
-// Create Certificate
+
+const uploadToCloudinary = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+        {
+        folder: "certificate",
+        },
+        (error, result) => {
+            if (error) return reject(error);
+                resolve(result);
+            }
+    );
+
+   stream.end(buffer);
+
+
+    });
+};
+
+
+
 export const createCertificate = async (req, res) => {
-    try {
-        const {
-            employee,
-            Module,
-            score,
-            certificateUrl
-        } = req.body;
+try {
 
-        const employeeExists = await User.findById(employee);
-        if (!employeeExists) {
-            return res.status(404).json({
-                message: "Employee not found"
-            });
-        }
+const {
+    title,
+    description,
+    issuedTo,
+    issuedBy,
+    dateIssued,
+    certificateNumber,
+    type
+} = req.body;
 
-        const moduleExists = await Module.findById(Module);
-        if (!moduleExists) {
-            return res.status(404).json({
-                message: "Module not found"
-            });
-        }
 
-        const certificate = await Certificate.create({
-            employee,
-            Module,
-            score,
-            certificateUrl,
-            certificateNumber: `CERT-${Date.now()}`
-        });
-
-        res.status(201).json({
-            message: "Certificate created successfully",
-            certificate
-        });
-
-    } catch (error) {
-        res.status(500).json({
+    if (!req.file) {
+        return res.status(400).json({
+            success: false,
             message: error.message
         });
     }
+
+    const uploadResult = await uploadToCloudinary(req.file.buffer);
+    if (!uploadResult || !uploadResult.secure_url) {
+    return res.status(500).json({
+        success: false,
+        message: "Cloudinary upload failed",
+    });
+}
+    const CertificateNumber = `CERT-${Date.now()}`;
+    const certificate = await Certificate.create({
+        title,
+        description,
+        issuedTo,
+        issuedBy,
+        type,
+        certificateNumber: CertificateNumber,
+        certificateUrl: uploadResult.secure_url,
+        dateIssued: dateIssued ? new Date(dateIssued) : Date.now(),
+    });
+    if (!certificate) {
+    return res.status(500).json({
+        success: false,
+        message: "Failed to create certificate",
+    });
+}
+
+    return res.status(201).json({
+        success: true,
+        message: "Certificate created successfully",
+        data: certificate,
+    });
+} catch (error) {
+    return res.status(400).json({
+        success: false,
+        message: error.message,
+    });
+}
 };
 
-// Get All Certificates
-export const getAllCertificates = async (req, res) => {
-    try {
-        const certificates = await Certificate.find()
-            .populate("employee", "name email")
-            .populate("Module", "title");
-
-        res.status(200).json({
-            count: certificates.length,
-            certificates
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
-    }
-};
-
-// Get Certificate By ID
+export const getCertificates = async (req, res) => {
+try {
+const certificates = await Certificate.find().sort({ createdAt: -1 });  
+    return res.status(200).json({
+        success: true,
+        count: certificates.length,
+        data: certificates,
+    }); 
+} catch (error) {
+    return res.status(500).json({
+        success: false,
+        message: error.message,
+    });
+}};
 export const getCertificateById = async (req, res) => {
     try {
-        const certificate = await Certificate.findById(req.params.id)
-            .populate("employee", "name email")
-            .populate("Module", "title");
-
-        if (!certificate) {
-            return res.status(404).json({
-                message: "Certificate not found"
+        const { id } = req.params;
+        const certificate = await Certificate.findById(id);
+            if (!certificate) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Certificate not found",
             });
         }
 
-        res.status(200).json(certificate);
-
+            return res.status(200).json({
+                success: true,
+                message: "Certificate fetched successfully",
+                data: certificate,
+            });
     } catch (error) {
-        res.status(500).json({
-            message: error.message
+        return res.status(500).json({
+            success: false,
+            message: error.message,
         });
     }
 };
 
-// Update Certificate
 export const updateCertificate = async (req, res) => {
     try {
-        const {
-            score,
-            certificateUrl
-        } = req.body;
+        const { id } = req.params;
+
+        console.log("UPDATE ID:", id); //To check
+        console.log("UPDATE BODY:", req.body); //To check
 
         const updatedCertificate = await Certificate.findByIdAndUpdate(
-            req.params.id,
-            {
-                score,
-                certificateUrl
-            },
+            id,
+            { $set: req.body },
             {
                 new: true,
-                runValidators: true
+                runValidators: true,
             }
         );
 
         if (!updatedCertificate) {
             return res.status(404).json({
-                message: "Certificate not found"
+                success: false,
+                message: "Certificate not found",
             });
         }
 
-        res.status(200).json({
-            message: "Certificate updated successfully",
-            certificate: updatedCertificate
+        return res.status(200).json({
+            success: true,
+            message: "Updated successfully",
+            data: updatedCertificate,
         });
 
     } catch (error) {
-        res.status(500).json({
-            message: error.message
+        return res.status(500).json({
+            success: false,
+            message: error.message,
         });
     }
 };
 
-// Delete Certificate
 export const deleteCertificate = async (req, res) => {
     try {
-        const deletedCertificate = await Certificate.findByIdAndDelete(
-            req.params.id
-        );
-
-        if (!deletedCertificate) {
+        const { id } = req.params;
+        const certificate = await Certificate.findById(id);
+        if (!certificate) {
             return res.status(404).json({
-                message: "Certificate not found"
+                success: false,
+                message: "Certificate not found",
             });
-        }
+        }   
+        await certificate.remove();
 
-        res.status(200).json({
-            message: "Certificate deleted successfully"
+        return res.status(200).json({
+            success: true,
+            message: "Certificate deleted successfully",
         });
-
     } catch (error) {
-        res.status(500).json({
-            message: error.message
+        return res.status(500).json({
+            success: false,
+            message: error.message,
         });
-    }
+    };  
 };

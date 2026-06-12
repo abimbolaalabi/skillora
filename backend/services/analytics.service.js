@@ -2,6 +2,7 @@ import Module from "../models/Module.js";
 import Assignment from "../models/Assignment.js";
 import Progress from "../models/Progress.js";
 import User from "../models/User.js";
+import Department from "../models/Department.js";
 
 // ─────────────────────────────────────────────
 // GET /api/analytics/overview
@@ -16,13 +17,17 @@ export const getOverview = async () => {
     completedCount,
     quizAttempts,
     reflectionCount,
+    totalDepartment,   //modified
+    activeUsers,   //modified
   ] = await Promise.all([
     Module.countDocuments({ status: "published" }),
     Assignment.countDocuments(),
-    Progress.countDocuments(),
-    Progress.countDocuments({ status: "completed" }),
+    Progress.countDocuments({ status: "in progress" }),
+    Assignment.countDocuments({ status: "completed" }),
     Progress.countDocuments({ quizAttempted: true }),
     Progress.countDocuments({ reflectionSubmitted: true }),
+    Department.countDocuments(), //modified
+    User.countDocuments({isActive: true}) //modified
   ]);
 
   // Average quiz score across all attempted records
@@ -54,6 +59,8 @@ export const getOverview = async () => {
     completionRate,          // %
     avgQuizScore,            // 0-100
     reflectionSubmissionRate, // %
+    totalDepartment,   //modified
+    activeUsers   //modified
   };
 };
 
@@ -75,10 +82,10 @@ export const getModuleAnalytics = async () => {
         quizAttempted,
         reflections,
       ] = await Promise.all([
-        Progress.countDocuments({ moduleId }),
-        Progress.countDocuments({ moduleId, status: "completed" }),
-        Progress.countDocuments({ moduleId, status: "in_progress" }),
-        Progress.countDocuments({ moduleId, status: "not_started" }),
+        Assignment.countDocuments({ moduleId }),
+        Assignment.countDocuments({ moduleId, status: "completed" }), //modified
+        Assignment.countDocuments({ moduleId, status: "in_progress" }), //modified
+        Assignment.countDocuments({ moduleId, status: "not_started" }),  //modified
         Progress.countDocuments({ moduleId, quizAttempted: true }),
         Progress.countDocuments({ moduleId, reflectionSubmitted: true }),
       ]);
@@ -149,10 +156,18 @@ export const getUserAnalytics = async () => {
       const [assigned, completed, quizAttempted, reflections] =
         await Promise.all([
           Progress.countDocuments({ userId }),
-          Progress.countDocuments({ userId, status: "completed" }),
-          Progress.countDocuments({ userId, quizAttempted: true }),
+          Progress.countDocuments({ userId, status: "completed" }), //modified
+          Progress.countDocuments({ userId, status: true }),
           Progress.countDocuments({ userId, reflectionSubmitted: true }),
         ]);
+
+        if (assigned === completed) { //modified
+          await User.findByIdAndUpdate(user._id, {onboardingStatus: "completed", tracking: `${completed} / ${assigned}`}, {new: true})
+        } else if (completed > 0 && completed < assigned ) {
+          await User.findByIdAndUpdate(user._id, {onboardingStatus: "in progress"}, {new: true})
+        } else {
+          await User.findByIdAndUpdate(user._id, {onboardingStatus: "not started"}, {new: true})
+        } //modified
 
       const quizAgg = await Progress.aggregate([
         { $match: { userId, quizAttempted: true } },
@@ -180,6 +195,7 @@ export const getUserAnalytics = async () => {
         stats: {
           assigned,
           completed,
+          tracking: `${completed} / ${assigned}`,
           completionRate:
             assigned > 0 ? Math.round((completed / assigned) * 100) : 0,
           quizAttempted,

@@ -1,58 +1,183 @@
 import Badge from "../models/Badge.js";
+import cloudinary from "../config/cloudinary.js";
 
-const createBadge = async (req, res) => {
-    try {
-        const { name, description, criteria, category} = req.body;
-        const iconUrl = req.file ? req.file.path : null;
-        const newBadge = await Badge.create({
-            name,
-            description,
-            iconUrl,
-            criteria,
-            category 
+const uploadToCloudinary = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+    {
+        folder: "badges",
+    },
+        (error, result) => {
+            if (error) return reject(error);
+                resolve(result);
+        }
+    );
+
+   stream.end(buffer);
+
+
+    });
+};
+
+
+  export const createBadge = async (req, res) => {
+  try {
+  const { name, description, criteria, category, score } = req.body;
+
+   if (!req.file) {
+       return res.status(400).json({
+           success: false,
+           message: "Badge icon is required",
+       });
+   }
+
+   const uploadResult = await uploadToCloudinary(req.file.buffer);
+
+   const badge = await Badge.create({
+       name,
+       description,
+       criteria,
+       category,
+       score: "score" in req.body ? (score === "" ? null : score) : null,
+       iconUrl: uploadResult.secure_url,
+   });
+
+   return res.status(201).json({
+       success: true,
+       message: "Badge created successfully",
+       data: badge,
+   });
+
+
+  } catch (error) {
+        return res.status(400).json({
+        success: false,
+        message: error.message,
         });
-        res.status(201).json(newBadge);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
     }
 };
 
-const getAllBadges = async (req, res) => {
+
+export const getAllBadges = async (req, res) => {
     try {
-        const badges = await Badge.find();
-        res.status(200).json(badges);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }   
+    const badges = await Badge.find().sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: badges.length,
+            data: badges,
+    });
+
+
+  } catch (error) {
+    return res.status(500).json({
+        sccess: false,
+        message: error.message,
+        });
+    }
 };
 
-const getBadgeById = async (req, res) => {
-    try{
+
+export const getBadgeById = async (req, res) => {
+    try {
         const badge = await Badge.findById(req.params.id);
-        if(!badge){
-            return res.status(404).json({ message: "Badge not found" });
+
+
+        if (!badge) {
+            return res.status(404).json({
+                success: false,
+                message: "Badge not found",
+            });
         }
-        res.status(200).json(badge);
+
+        return res.status(200).json({
+            success: true,
+            data: badge,
+   });
+
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
-const updateBadge = async (req, res) => {
+
+    export const updateBadge = async (req, res) => {
+        try {
+            const {
+                name,
+                description,
+                criteria,
+                category,
+                score,
+                isActive,
+                } = req.body;
+
+           const badge = await Badge.findById(req.params.id);
+
+           if (!badge) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Badge not found",
+                });
+            }
+
+            if (name !== undefined) badge.name = name;
+            if (description !== undefined) badge.description = description;
+            if (criteria !== undefined) badge.criteria = criteria;
+            if (category !== undefined) badge.category = category;
+            if (isActive !== undefined) badge.isActive = isActive;
+
+            if ("score" in req.body) {
+                badge.score = score === "" ? null : score;
+            }
+
+            if (req.file) {
+                const uploadResult = await uploadToCloudinary(req.file.buffer);
+                badge.iconUrl = uploadResult.secure_url;
+            }
+
+        const updatedBadge = await badge.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Badge updated successfully",
+            data: updatedBadge,
+        });
+
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const deleteBadge = async (req, res) => {
     try {
-        const { name, description, criteria, iconUrl, category } = req.body;
-        const updatedBadge = await Badge.findByIdAndUpdate(
-            req.params.id,
-            { name, description, criteria, category, iconUrl: req.file ? req.file.path : iconUrl },
-            { new: true }
-        );
-        if (!updatedBadge) {
-            return res.status(404).json({ message: "Badge not found" });
+        const badge = await Badge.findByIdAndDelete(req.params.id);
+
+        if (!badge) {
+            return res.status(404).json({
+                success: false,
+                message: "Badge not found",
+            });
         }
-        res.status(200).json(updatedBadge);
+
+        return res.status(200).json({
+            success: true,
+            message: "Badge deleted successfully",
+        });
+
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
-export { createBadge, getAllBadges, getBadgeById, updateBadge };
