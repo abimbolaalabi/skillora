@@ -1,5 +1,6 @@
 // controllers/quizController.js
 import Quiz from '../models/Quiz.js';
+import Module from "../models/Module.js"
 
 export const submitQuiz = async (req, res) => {
   try {
@@ -114,6 +115,12 @@ export const createQuiz = async (req, res) => {
       questions,
       passingPercentage,
       isPublished
+    });
+
+    await Module.findByIdAndUpdate(moduleId, {
+      $addToSet: {
+        quizzes: quiz._id
+      }
     });
 
     await quiz.save();

@@ -27,8 +27,8 @@ const assignmentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["assigned", "in_progress", "completed"],
-        default: "assigned"
+        enum: ["not started", "in progress", "completed"],
+        default: "not started"
     }
 }, { timestamps: true });
 
