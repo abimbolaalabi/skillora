@@ -18,7 +18,8 @@ export const getOverview = async () => {
     quizAttempts,
     reflectionCount,
     totalDepartment,   //modified
-    activeUsers,   //modified
+    activeUsers, // modified
+    overdueTraining   //modified
   ] = await Promise.all([
     Module.countDocuments({ status: "published" }),
     Assignment.countDocuments(),
@@ -27,7 +28,8 @@ export const getOverview = async () => {
     Progress.countDocuments({ quizAttempted: true }),
     Progress.countDocuments({ reflectionSubmitted: true }),
     Department.countDocuments(), //modified
-    User.countDocuments({isActive: true}) //modified
+    User.countDocuments({isActive: true}), //modified
+    Assignment.countDocuments({ overdue: true }) //added
   ]);
 
   // Average quiz score across all attempted records
@@ -51,6 +53,12 @@ export const getOverview = async () => {
       ? Math.round((reflectionCount / totalProgressRecords) * 100)
       : 0;
 
+  const completedPercentage = completedCount > 0 ? Math.round((completedCount / totalAssignments) * 100) : 0;
+
+  const inProgressPercentage = totalProgressRecords > 0 ? Math.round((totalProgressRecords / totalAssignments) * 100) : 0;
+
+  const notStartedPercentage = 100 - completedPercentage - inProgressPercentage;
+
   return {
     totalModules,
     totalAssignments,
@@ -60,7 +68,12 @@ export const getOverview = async () => {
     avgQuizScore,            // 0-100
     reflectionSubmissionRate, // %
     totalDepartment,   //modified
-    activeUsers   //modified
+    activeUsers,   //modified
+    overdueTraining, //added
+    completedPercentage, //added
+    inProgressPercentage, //added
+    notStartedPercentage //added
+
   };
 };
 

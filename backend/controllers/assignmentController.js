@@ -69,6 +69,30 @@ export const createAssignment = async (req, res) => {
             }))
         );
 
+        await Notification.insertMany(
+            usersToAssign.map((user) => ({
+                userId: user,
+                dept,
+                message: "A module has been assigned to you"
+            }))
+        )
+
+        const result = await User.bulkWrite(
+            assignments.map(assignment => ({
+                updateOne: {
+                    filter: { _id: assignment.assignedTo },
+                    update: {
+                        $addToSet: {
+                            assignments: assignment._id,
+                            modules: assignment.moduleId 
+                        }
+                 }
+             }
+            }))
+        );
+
+        
+
         // assignments.push(assignment);
         
         
