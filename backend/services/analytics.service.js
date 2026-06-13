@@ -96,9 +96,9 @@ export const getModuleAnalytics = async () => {
         reflections,
       ] = await Promise.all([
         Assignment.countDocuments({ moduleId }),
-        Assignment.countDocuments({ moduleId, status: "completed" }), //modified
-        Assignment.countDocuments({ moduleId, status: "in_progress" }), //modified
-        Assignment.countDocuments({ moduleId, status: "not_started" }),  //modified
+        Progress.countDocuments({ moduleId, completionStatus: "completed" }), //modified
+        Progress.countDocuments({ moduleId, completionStatus: "in_progress" }), //modified
+        Progress.countDocuments({ moduleId, completionStatus: "not_started" }),  //modified
         Progress.countDocuments({ moduleId, quizAttempted: true }),
         Progress.countDocuments({ moduleId, reflectionSubmitted: true }),
       ]);
@@ -169,17 +169,20 @@ export const getUserAnalytics = async () => {
       const [assigned, completed, quizAttempted, reflections] =
         await Promise.all([
           Progress.countDocuments({ userId }),
-          Progress.countDocuments({ userId, status: "completed" }), //modified
+          Progress.countDocuments({ userId, completionStatus: "completed" }), //modified
           Progress.countDocuments({ userId, status: true }),
           Progress.countDocuments({ userId, reflectionSubmitted: true }),
         ]);
 
-        if (assigned === completed) { //modified
+        const completedRate = completed > 0 ? math.round((completed / assigned) * 100) : 0;
+        await User.findByIdAndUpdate(user._id, {completionRate: completedRate})
+
+        if (assigned === completed && assigned > 0) { //modified
           await User.findByIdAndUpdate(user._id, {onboardingStatus: "completed", tracking: `${completed} / ${assigned}`}, {new: true})
         } else if (completed > 0 && completed < assigned ) {
-          await User.findByIdAndUpdate(user._id, {onboardingStatus: "in progress"}, {new: true})
+          await User.findByIdAndUpdate(user._id, {onboardingStatus: "in progress", tracking: `${completed} / ${assigned}`}, {new: true})
         } else {
-          await User.findByIdAndUpdate(user._id, {onboardingStatus: "not started"}, {new: true})
+          await User.findByIdAndUpdate(user._id, {onboardingStatus: "not started", tracking: `${completed} / ${assigned}`}, {new: true})
         } //modified
 
       const quizAgg = await Progress.aggregate([

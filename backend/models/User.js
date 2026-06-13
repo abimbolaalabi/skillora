@@ -32,6 +32,9 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Assignment"
         }],
+        completionRate: {
+            type: Number
+        },
         onboardingStatus: {
             type: String,
             enum: ["not started", "in progress", "completed"],
