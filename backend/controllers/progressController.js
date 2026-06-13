@@ -10,6 +10,14 @@ export const startModule = async (req, res) => {
   const { userId, moduleId } = req.params;
 
   try {
+    const assignment = await Assignment.findOne({ moduleId, assignedTo: userId });
+    if (!assignment) {
+      return res.status(403).json({
+        success: false,
+        message: 'User is not assigned to this module or assignment does not exist'
+      });
+    }
+
     let progress = await Progress.findOne({ userId, moduleId });
 
     if (!progress) {
@@ -19,8 +27,8 @@ export const startModule = async (req, res) => {
         completionStatus: 'In Progress',
         startedAt: new Date()
       });
-      const assignmentInitiated = await Assignment.findOneAndUpdate({moduleId: moduleId, assignedTo: userId}, {status: "in_progress"}, {new: true})
-      
+      assignment.status = 'in progress';
+      await assignment.save();
     } else if (progress.completionStatus === 'Not Started') {
       progress.completionStatus = 'In Progress';
       progress.startedAt = new Date();
@@ -189,11 +197,30 @@ export const getUserDashboard = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const [modules, progressDocs] = await Promise.all([
-      Module.find().lean(),
-      Progress.find({ userId }).lean()
+    const [progressDocs, assignments] = await Promise.all([
+      Progress.find({ userId }).lean(),
+      Assignment.find({ assignedTo: userId }).lean()
     ]);
 
+    const assignedModuleIds = assignments.map((assignment) => assignment.moduleId.toString());
+    const progressModuleIds = progressDocs.map((p) => p.moduleId.toString());
+    const moduleIds = Array.from(new Set([...assignedModuleIds, ...progressModuleIds]));
+
+    if (moduleIds.length === 0) {
+      return res.json({
+        success: true,
+        stats: {
+          totalModules: 0,
+          notStarted: 0,
+          inProgress: 0,
+          completed: 0,
+          overallPercentage: 0,
+          modules: []
+        }
+      });
+    }
+
+    const modules = await Module.find({ _id: { $in: moduleIds } }).lean();
     const progressByModule = new Map(
       progressDocs.map((p) => [p.moduleId.toString(), p])
     );
@@ -237,6 +264,10 @@ export const getUserDashboard = async (req, res) => {
         : 0,
       modules: moduleProgress
     };
+
+    // Update onboardingStatus when total module = completed 
+    const newOnboardingStatus = stats.totalModules === stats.completed ? 'completed' : 'in progress';
+    await User.findByIdAndUpdate(userId, { onboardingStatus: newOnboardingStatus });
 
     res.json({ success: true, stats });
   } catch (error) {

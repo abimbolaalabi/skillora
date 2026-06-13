@@ -11,6 +11,10 @@ const progressSchema = new mongoose.Schema({
         ref: 'Module',
         required: true
     },
+    assignmentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Assignment'
+    },
     completionStatus: {
         type: String,
         enum: ["Not Started", "In Progress", "Completed"],
