@@ -37,7 +37,8 @@ const getUserById = async (req, res) => {
             error: error.message
         });
     }
-};
+};0
+
 
 
 const updateUser = async (req, res) => {

@@ -25,6 +25,10 @@ const assignmentSchema = new mongoose.Schema({
     dueDate: {
         type: Date
     },
+    overdue: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ["not started", "in progress", "completed"],
