@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
         tracking: {
             type: String
         },
+        assignments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Assignment"
+        }],
         modules: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Module"

@@ -10,6 +10,14 @@ export const startModule = async (req, res) => {
   const { userId, moduleId } = req.params;
 
   try {
+    const assignment = await Assignment.findOne({ moduleId, assignedTo: userId });
+    if (!assignment) {
+      return res.status(403).json({
+        success: false,
+        message: 'User is not assigned to this module or assignment does not exist'
+      });
+    }
+
     let progress = await Progress.findOne({ userId, moduleId });
 
     if (!progress) {
@@ -19,8 +27,8 @@ export const startModule = async (req, res) => {
         completionStatus: 'In Progress',
         startedAt: new Date()
       });
-      const assignmentInitiated = await Assignment.findOneAndUpdate({moduleId: moduleId, assignedTo: userId}, {status: "in_progress"}, {new: true})
-      
+      assignment.status = 'in progress';
+      await assignment.save();
     } else if (progress.completionStatus === 'Not Started') {
       progress.completionStatus = 'In Progress';
       progress.startedAt = new Date();
@@ -48,50 +56,6 @@ export const startModule = async (req, res) => {
     });
   }
 };
-
-// export const getProgress = async (req, res) => {
-//   try {
-//     const { moduleId } = req.query;
-//     const userId = req.user._id;
-
-//     if (!moduleId) {
-//       return res.status(400).json({ success: false, message: 'moduleId query is required' });
-//     }
-
-//     const module = await Module.findById(moduleId, 'title description').lean();
-//     if (!module) {
-//       return res.status(404).json({ success: false, message: 'Module not found' });
-//     }
-
-//     let progress = await Progress.findOne({ userId, moduleId })
-//       .populate('completedLessons.lessonId', 'title duration order')
-//       .lean();
-
-//     if (!progress) {
-//       progress = {
-//         userId,
-//         moduleId,
-//         completionStatus: 'Not Started',
-//         completedLessons: [],
-//         totalLessons: 0,
-//         completedLessonsCount: 0,
-//         progressPercentage: 0,
-//         module
-//       };
-//     } else {
-//       const completedLessonsCount = (progress.completedLessons || []).length;
-//       progress.completedLessonsCount = completedLessonsCount;
-//       progress.progressPercentage = progress.totalLessons
-//         ? Number(((completedLessonsCount / progress.totalLessons) * 100).toFixed(2))
-//         : 0;
-//       progress.module = module;
-//     }
-
-//     res.json({ success: true, progress });
-//   } catch (error) {
-//     res.status(500).json({ success: false, error: error.message });
-//   }
-// };
 
 export const getModuleProgress = async (req, res) => {
   try {
@@ -233,11 +197,30 @@ export const getUserDashboard = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const [modules, progressDocs] = await Promise.all([
-      Module.find().lean(),
-      Progress.find({ userId }).lean()
+    const [progressDocs, assignments] = await Promise.all([
+      Progress.find({ userId }).lean(),
+      Assignment.find({ assignedTo: userId }).lean()
     ]);
 
+    const assignedModuleIds = assignments.map((assignment) => assignment.moduleId.toString());
+    const progressModuleIds = progressDocs.map((p) => p.moduleId.toString());
+    const moduleIds = Array.from(new Set([...assignedModuleIds, ...progressModuleIds]));
+
+    if (moduleIds.length === 0) {
+      return res.json({
+        success: true,
+        stats: {
+          totalModules: 0,
+          notStarted: 0,
+          inProgress: 0,
+          completed: 0,
+          overallPercentage: 0,
+          modules: []
+        }
+      });
+    }
+
+    const modules = await Module.find({ _id: { $in: moduleIds } }).lean();
     const progressByModule = new Map(
       progressDocs.map((p) => [p.moduleId.toString(), p])
     );
@@ -282,9 +265,48 @@ export const getUserDashboard = async (req, res) => {
       modules: moduleProgress
     };
 
+    // Update onboardingStatus when total module = completed 
+    const newOnboardingStatus = stats.totalModules === stats.completed ? 'completed' : 'in progress';
+    await User.findByIdAndUpdate(userId, { onboardingStatus: newOnboardingStatus });
+
     res.json({ success: true, stats });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
+export const completeLesson = async (req, res) => {
+  try {
+    const { userId, moduleId, lessonId } = req.params;
+    if (!userId || !moduleId || !lessonId) {
+      return res.status(400).json({ success: false, message: 'userId, moduleId and lessonId required' });
+    }
+    const module = await Module.findById(moduleId);
+    if (!module) return res.status(404).json({ success: false, message: 'Module not found' });
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) return res.status(404).json({ success: false, message: 'Lesson not found' });
+
+    let progress = await Progress.findOne({ userId, moduleId });
+    if (!progress) {
+      progress = new Progress({
+        userId,
+        moduleId,
+        startedAt: new Date(),
+        completionStatus: 'In Progress'
+      });
+    }
+    // avoid duplicate completed entries
+    const already = (progress.completedLessons || []).some(c => c.lessonId.toString() === lessonId.toString());
+    if (!already) {
+      progress.completedLessons.push({ lessonId, completedAt: new Date() });
+    }
+    // ensure totalLessons is set (fallback to module.totalLessons or count)
+    progress.totalLessons = progress.totalLessons || module.totalLessons || (await Lesson.countDocuments({ moduleId }));
+
+    await progress.save();
+
+    res.json({ success: true, progress });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
