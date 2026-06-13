@@ -10,7 +10,7 @@ export const startModule = async (req, res) => {
   const { userId, moduleId } = req.params;
 
   try {
-    const assignment = await Assignment.findOne({ moduleId, assignedTo: userId });
+    const assignment = await Assignment.findOne({ moduleId: moduleId, assignedTo: userId });
     if (!assignment) {
       return res.status(403).json({
         success: false,
